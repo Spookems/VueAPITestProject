@@ -1,12 +1,72 @@
 <template>
   <v-app>
+
+
+
+    <v-dialog v-model="dialog" max-width="1000px">
+      <v-card>
+        <v-card-title>
+          Weather & Grid Tabs
+          <v-spacer></v-spacer>
+          <v-btn icon @click="dialog = false"><v-icon>mdi-close</v-icon></v-btn>
+        </v-card-title>
+        <v-card-text>
+          <v-tabs v-model="tab">
+            <v-tab value="weather">Weather Cards</v-tab>
+            <v-tab value="grid">AG-Grid Table
+
+
+            </v-tab>
+          </v-tabs>
+
+          <v-window v-model="tab" class="mt-4">
+            <v-window-item value="weather">
+
+              aaaaaaaaaaaaaaaaaaa
+              <div style="display: flex; gap: 1rem; overflow-x: auto;">
+                <div v-if="selectedWeather" class="mb-4">
+                  <h3 class="text-h6">Details for {{ selectedWeather.dt_txt }}</h3>
+                  <p>🌡️ Temp: {{ (selectedWeather.main.temp - 273.15).toFixed(1) }} °C</p>
+                  <p>☁️ Clouds: {{ selectedWeather.clouds.all }}%</p>
+                  <p>💨 Wind: {{ selectedWeather.wind.speed }} m/s</p>
+                  <v-progress-linear :model-value="selectedWeather.wind.speed * 3" height="10" color="blue" />
+                </div>
+              </div>
+            </v-window-item>
+
+            <v-window-item value="grid">
+
+
+
+              <ag-grid-vue class="ag-theme-alpine" style="height: 300px; width: 100%;" :rowData="weatherData"
+                :columnDefs="gridColumns" :domLayout="'autoHeight'"
+                :defaultColDef="{ resizable: true, sortable: true }" />
+            </v-window-item>
+          </v-window>
+        </v-card-text>
+
+
+
+
+      </v-card>
+    </v-dialog>
     <v-main>
 
       <h1>Vue API Test</h1>
       <p>{{ message }}</p>
 
-      <v-btn @click="getMessage" class="mr-2">Get message from API</v-btn>
-      <v-btn @click="getSecondMessage">Get weather data</v-btn>
+      <v-navigation-drawer app permanent>
+        <v-list nav dense>
+          <v-list-item-title class="text-h6 px-4 py-2">Actions</v-list-item-title>
+          <v-divider></v-divider>
+          <v-list-item>
+            <v-btn block color="primary" @click="getMessage">Get Message from API</v-btn>
+          </v-list-item>
+          <v-list-item>
+            <v-btn block color="secondary" @click="getSecondMessage">Get Weather Data</v-btn>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
       <div style="display: flex; ; gap: 2rem; " class="mt-6">
         <v-container>
 
@@ -29,6 +89,7 @@
               <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
               <div>☁️ {{ entry.clouds.all }}%</div>
               <div>💨 {{ entry.wind.speed }} m/s</div>
+              <v-btn style="margin-top: 100px;" @click="dialog = true" color="primary">Details</v-btn>
             </v-card>
           </div>
 
@@ -130,6 +191,21 @@ import {
   LinearScale,
   BarElement
 } from 'chart.js'
+
+import { AgGridVue } from 'ag-grid-vue3'
+import 'ag-grid-community/styles/ag-grid.css'
+import 'ag-grid-community/styles/ag-theme-alpine.css'
+
+const dialog = ref(false)
+const tab = ref('weather')
+
+const gridColumns = [
+  { field: 'dt_txt', headerName: 'Date/Time' },
+  { field: 'main.temp', headerName: 'Temperature (K)' },
+  { field: 'clouds.all', headerName: 'Clouds (%)' },
+  { field: 'wind.speed', headerName: 'Wind (m/s)' }
+]
+
 Chart.register(ArcElement, Tooltip, Legend, DoughnutController, BarController, CategoryScale, LinearScale, BarElement)
 
 const message = ref('Nothing yet')
@@ -165,11 +241,20 @@ async function getMessage() {
     console.error(err)
   }
 }
-
+function openWeatherModal(entry) {
+  selectedWeather.value = entry
+  dialog.value = true
+  tab.value = 'weather'
+}
 async function getSecondMessage() {
 
 
   try {
+    // this one works, use lat long
+    // https://api.openweathermap.org/data/2.5/weather?lat=50&lon=50&appid=e09a06ce74d5a069adb6113f39fc5bee
+
+
+    //"http://api.openweathermap.org/data/2.5/forecast?id=524901&appid=43be5bacfb349f774b7fc719e379e4c1"
     const res = await fetch("http://api.openweathermap.org/data/2.5/forecast?id=524901&appid=43be5bacfb349f774b7fc719e379e4c1")
     const data = await res.json()
     weatherData.value = data.list.slice(0, 20)
@@ -287,5 +372,10 @@ watch(weatherData, () => {
   font-size: 0.85rem;
   color: #555;
   margin-top: 0.3rem;
+}
+
+.app-background {
+  background: linear-gradient(to bottom right, #f0f4f8, #e6ecf2);
+  min-height: 100vh;
 }
 </style>
