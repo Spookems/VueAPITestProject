@@ -76,7 +76,7 @@
         <v-container v-if="weatherData.length" class="main-content" fluid>
           <h1 class="text-center mb-4">Vue Weather Dashboard</h1>
           <v-row class="d-flex justify-space-around">
-            <v-col cols="12" md="3">
+            <v-col cols="12" md="4">
               <v-card elevation="6" class="pa-4 fade-in">
                 <v-card-title class="font-weight-bold">Temperature Chart</v-card-title>
                 <v-card-text>
@@ -86,7 +86,7 @@
                 </v-card-text>
               </v-card>
             </v-col>
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="4">
               <v-card elevation="6" class="pa-4 fade-in">
                 <v-card-title class="font-weight-bold">Weather Cards</v-card-title>
                 <v-card-text>
@@ -95,7 +95,7 @@
                       v-for="(entry, index) in weatherData"
                       :key="index"
                       :style="getCardStyle(entry.main.temp)"
-                      class="pa-3 weather-card mr-4 rounded-lg shadow-2xl">
+                      class="pa-3 weather-card mr-4 ">
                       <div><strong>{{ entry.dt_txt }}</strong></div>
                       <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
                       <div>☁️ {{ entry.clouds.all }}%</div>
@@ -108,7 +108,7 @@
                 </v-card-text>
               </v-card>
             </v-col>
-            <v-col cols="12" md="3">
+            <v-col cols="12" md="4">
               <v-card elevation="6" class="pa-4 fade-in">
                 <v-card-title class="font-weight-bold">Average Wind Speed</v-card-title>
                 <v-card-text>
