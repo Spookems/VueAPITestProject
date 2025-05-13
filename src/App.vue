@@ -97,62 +97,12 @@
         </v-container>
 
       </div>
-      <div class="alert-box">
-        <div class="alert-icon">
-          <img src="@/assets/flood-warning.png" alt="Flood warning icon" />
-          <span class="warning-label">WARNING</span>
-        </div>
-        <div class="alert-content">
-          <h2>Flood alerts in force for England</h2>
-          <a href="https://www.gov.uk/check-flooding" target="_blank">Environment Agency</a>
-          <p class="updated">Updated: 13:53 (UTC+1) on Fri 2 May 2025</p>
-        </div>
-      </div>
+      <v-alert v-for="(alert, index) in weatherAlerts" :key="index" type="warning" border="left" prominent class="mb-3">
+        <strong>{{ alert.event }}</strong> ({{ alert.severity }})
+        <div>{{ alert.description }}</div>
+      </v-alert>
       <v-container class="pa-8">
-        <v-card elevation="2" class="pa-4">
-          <h2 class="text-h5 font-weight-bold mb-4">North East England weather forecast</h2>
-
-          <!-- Toggle Button -->
-          <v-btn @click="showDetails = !showDetails" color="grey lighten-2" variant="flat" class="mb-4">
-            {{ showDetails ? 'Hide' : 'Show' }} forecast
-            <v-icon end>{{ showDetails ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-          </v-btn>
-
-          <!-- Expandable Content -->
-          <v-expand-transition>
-            <div v-show="showDetails">
-              <v-card class="pa-4" variant="tonal">
-                <p><strong>Headline:</strong><br>Friday, dry with bright or sunny spells. Cooler.</p>
-
-                <p><strong>Today:</strong><br>
-                  Largely fine and dry, with some bright or sunny spells. Most parts a little cloudier in the afternoon.
-                  Feeling noticeably cooler than of late, but still warm in sunshine.
-                  Generally light winds. Maximum temperature 17 °C.
-                </p>
-
-                <p><strong>Tonight:</strong><br>
-                  It will be a dry night with clear periods and generally light winds,
-                  allowing temperatures to become chilly for most. Minimum temperature 4 °C.
-                </p>
-
-                <p><strong>Saturday:</strong><br>
-                  Generally dry with bright or sunny spells, just the chance of an isolated light shower.
-                  Feeling noticeably cooler in an increasing breeze. Maximum temperature 15 °C.
-                </p>
-
-                <p><strong>Outlook for Sunday to Tuesday:</strong><br>
-                  Mainly dry conditions with bright or sunny spells.
-                  However variable, occasionally large amounts of cloud, also giving a few light showers.
-                  Brisk winds, easing later. Feeling much cooler.
-                </p>
-
-                <p class="text-caption mt-4">
-                  <em>Updated: 05:00 (UTC+1) on Fri 2 May 2025</em>
-                </p>
-              </v-card>
-            </div>
-          </v-expand-transition>
-        </v-card>
+        <alertView></alertView>
       </v-container>
     </v-main>
   </v-app>
@@ -170,7 +120,7 @@ import {
   LinearScale,
   BarElement
 } from 'chart.js'
-
+import alertView from './components/alertView.vue'
 import { AgGridVue } from 'ag-grid-vue3'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
@@ -204,6 +154,8 @@ let windChart = null
 const chartCanvas = ref(null)
 let weatherChart = null
 const showDetails = ref(true)
+
+
 
 const vuetify = createVuetify({
   components,
