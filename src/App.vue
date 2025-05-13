@@ -1,8 +1,5 @@
 <template>
   <v-app>
-
-
-
     <v-dialog v-model="dialog" max-width="1000px">
       <v-card>
         <v-card-title>
@@ -14,14 +11,10 @@
           <v-tabs v-model="tab">
             <v-tab value="weather">Weather Cards</v-tab>
             <v-tab value="grid">AG-Grid Table
-
-
             </v-tab>
           </v-tabs>
-
           <v-window v-model="tab" class="mt-4">
             <v-window-item value="weather">
-
               aaaaaaaaaaaaaaaaaaa
               <div style="display: flex; gap: 1rem; overflow-x: auto;">
                 <div v-if="selectedWeather" class="mb-4">
@@ -33,21 +26,13 @@
                 </div>
               </div>
             </v-window-item>
-
             <v-window-item value="grid">
-
-
-
               <ag-grid-vue class="ag-theme-alpine" style="height: 300px; width: 100%;" :rowData="weatherData"
                 :columnDefs="gridColumns" :domLayout="'autoHeight'"
                 :defaultColDef="{ resizable: true, sortable: true }" />
             </v-window-item>
           </v-window>
         </v-card-text>
-
-
-
-
       </v-card>
     </v-dialog>
     <v-main>
@@ -73,8 +58,7 @@
       </v-navigation-drawer>
       <div style="display: flex; ; gap: 2rem; " class="mt-6">
         <v-container>
-
-          <!-- Wind Speed Gauge -->
+          <!-- Temperature Chart -->
           <v-card class="mt-5" elevation="4">
             <v-card-title>Temperatures</v-card-title>
             <v-card-text>
@@ -85,7 +69,7 @@
           </v-card>
         </v-container>
         <v-container>
-          <!-- Scrollable Weather Cards -->
+          <!-- Weather Cards -->
           <div style="display: flex; gap: 1rem;overflow-x: auto; width: 1000px; height: 300px;">
             <v-card v-for="(entry, index) in weatherData" :key="index" :style="getCardStyle(entry.main.temp)"
               class="pa-4" style="min-width: 200px;">
@@ -96,10 +80,8 @@
               <v-btn style="margin-top: 100px;" @click="dialog = true" color="primary">Details</v-btn>
             </v-card>
           </div>
-
         </v-container>
         <v-container>
-
           <!-- Wind Speed Gauge -->
           <v-card elevation="4" class="pa-4" style="min-width: 300px; ">
             <v-card-title>Average Wind Speed</v-card-title>
@@ -173,15 +155,8 @@
         </v-card>
       </v-container>
     </v-main>
-
-
-
   </v-app>
-
-
 </template>
-
-
 
 <script setup>
 import 'vuetify/styles'
@@ -254,11 +229,13 @@ async function getMessage() {
     console.error(err)
   }
 }
+
 function openWeatherModal(entry) {
   selectedWeather.value = entry
   dialog.value = true
   tab.value = 'weather'
 }
+
 async function getSecondMessage() {
   try {
     const res = await fetch(`http://api.openweathermap.org/data/2.5/forecast?id=${selectedLocationId.value}&appid=43be5bacfb349f774b7fc719e379e4c1`)
