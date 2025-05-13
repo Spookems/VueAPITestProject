@@ -3,41 +3,51 @@
 
 
 
-    <v-dialog v-model="dialog">
+    <v-dialog v-model="dialog" max-width="1000px">
       <v-card>
         <v-card-title>
           Weather & Grid Tabs
           <v-spacer></v-spacer>
-          <v-btn icon @click="dialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <v-btn icon @click="dialog = false"><v-icon>mdi-close</v-icon></v-btn>
         </v-card-title>
         <v-card-text>
           <v-tabs v-model="tab">
             <v-tab value="weather">Weather Cards</v-tab>
-            <v-tab value="grid">AG-Grid Table</v-tab>
+            <v-tab value="grid">AG-Grid Table
+
+
+            </v-tab>
           </v-tabs>
+
           <v-window v-model="tab" class="mt-4">
             <v-window-item value="weather">
-              <transition name="fade-slide">
-                <div v-if="selectedWeather" class="mb-4 weather-details">
+
+              aaaaaaaaaaaaaaaaaaa
+              <div style="display: flex; gap: 1rem; overflow-x: auto;">
+                <div v-if="selectedWeather" class="mb-4">
                   <h3 class="text-h6">Details for {{ selectedWeather.dt_txt }}</h3>
                   <p>🌡️ Temp: {{ (selectedWeather.main.temp - 273.15).toFixed(1) }} °C</p>
                   <p>☁️ Clouds: {{ selectedWeather.clouds.all }}%</p>
                   <p>💨 Wind: {{ selectedWeather.wind.speed }} m/s</p>
                   <v-progress-linear :model-value="selectedWeather.wind.speed * 3" height="10" color="blue" />
                 </div>
-              </transition>
+              </div>
             </v-window-item>
+
             <v-window-item value="grid">
-              <transition name="fade-slide">
-                <ag-grid-vue v-if="weatherData.length" class="ag-theme-alpine" style="height: 300px; width: 100%;"
-                  :rowData="weatherData" :columnDefs="gridColumns" :domLayout="'autoHeight'"
-                  :defaultColDef="{ resizable: true, sortable: true }" />
-              </transition>
+
+
+
+              <ag-grid-vue class="ag-theme-alpine" style="height: 300px; width: 100%;" :rowData="weatherData"
+                :columnDefs="gridColumns" :domLayout="'autoHeight'"
+                :defaultColDef="{ resizable: true, sortable: true }" />
             </v-window-item>
           </v-window>
         </v-card-text>
+
+
+
+
       </v-card>
     </v-dialog>
     <v-main>
@@ -56,74 +66,52 @@
             <v-btn block color="secondary" @click="getSecondMessage">Get Weather Data</v-btn>
           </v-list-item>
           <v-list-item>
-            <v-form ref="coordForm" v-model="formValid" lazy-validation>
-              <v-text-field v-model.number="lat" label="Latitude" type="number" :rules="[
-                v => v !== null || 'Latitude required',
-                v => Math.abs(v) <= 1000 || 'Must be <= 1000'
-              ]" dense class="mb-2" />
-              <v-text-field v-model.number="lon" label="Longitude" type="number" :rules="[
-                v => v !== null || 'Longitude required',
-                v => Math.abs(v) <= 1000 || 'Must be <= 1000'
-              ]" dense />
-            </v-form>
+            <v-select v-model="selectedLocationId" :items="locations" item-title="name" item-value="id"
+              label="Select Location" dense outlined class="mb-2"></v-select>
           </v-list-item>
         </v-list>
       </v-navigation-drawer>
       <div style="display: flex; ; gap: 2rem; " class="mt-6">
         <v-container>
 
-         <v-fade-transition mode="out-in">
-        <v-container v-if="weatherData.length" class="main-content" fluid>
-          <h1 class="text-center mb-4">Vue Weather Dashboard</h1>
-          <v-row class="d-flex justify-space-around">
-            <v-col cols="12" md="4">
-              <v-card elevation="6" class="pa-4 fade-in">
-                <v-card-title class="font-weight-bold">Temperature Chart</v-card-title>
-                <v-card-text>
-                  <v-responsive style="height: 300px;">
-                    <canvas ref="chartCanvas"></canvas>
-                  </v-responsive>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-card elevation="6" class="pa-4 fade-in">
-                <v-card-title class="font-weight-bold">Weather Cards</v-card-title>
-                <v-card-text>
-                  <div class="d-flex gap-3 overflow-auto">
-                    <v-card
-                      v-for="(entry, index) in weatherData"
-                      :key="index"
-                      :style="getCardStyle(entry.main.temp)"
-                      class="pa-3 weather-card mr-4 ">
-                      <div><strong>{{ entry.dt_txt }}</strong></div>
-                      <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
-                      <div>☁️ {{ entry.clouds.all }}%</div>
-                      <div>💨 {{ entry.wind.speed }} m/s</div>
-                      <v-btn class="mt-3" color="primary" @click="selectedWeather = entry; dialog = true">
-                        Details
-                      </v-btn>
-                    </v-card>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-card elevation="6" class="pa-4 fade-in">
-                <v-card-title class="font-weight-bold">Average Wind Speed</v-card-title>
-                <v-card-text>
-                  <v-responsive style="height: 200px;">
-                    <canvas ref="windGauge"></canvas>
-                  </v-responsive>
-                  <div class="text-center mt-2">
-                    <strong>{{ avgWindSpeed.toFixed(1) }} m/s</strong>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
+          <!-- Wind Speed Gauge -->
+          <v-card class="mt-5" elevation="4">
+            <v-card-title>Temperatures</v-card-title>
+            <v-card-text>
+              <v-responsive style="height: 300px;">
+                <canvas ref="chartCanvas"></canvas>
+              </v-responsive>
+            </v-card-text>
+          </v-card>
         </v-container>
-      </v-fade-transition>
+        <v-container>
+          <!-- Scrollable Weather Cards -->
+          <div style="display: flex; gap: 1rem;overflow-x: auto; width: 1000px; height: 300px;">
+            <v-card v-for="(entry, index) in weatherData" :key="index" :style="getCardStyle(entry.main.temp)"
+              class="pa-4" style="min-width: 200px;">
+              <div><strong>{{ entry.dt_txt }}</strong></div>
+              <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
+              <div>☁️ {{ entry.clouds.all }}%</div>
+              <div>💨 {{ entry.wind.speed }} m/s</div>
+              <v-btn style="margin-top: 100px;" @click="dialog = true" color="primary">Details</v-btn>
+            </v-card>
+          </div>
+
+        </v-container>
+        <v-container>
+
+          <!-- Wind Speed Gauge -->
+          <v-card elevation="4" class="pa-4" style="min-width: 300px; ">
+            <v-card-title>Average Wind Speed</v-card-title>
+            <v-card-text>
+              <v-responsive style="height: 200px;">
+                <canvas ref="windGauge"></canvas>
+              </v-responsive>
+              <div class="text-center mt-2">
+                <strong>{{ avgWindSpeed.toFixed(1) }} m/s</strong>
+              </div>
+            </v-card-text>
+          </v-card>
         </v-container>
 
       </div>
@@ -222,6 +210,15 @@ const gridColumns = [
   { field: 'wind.speed', headerName: 'Wind (m/s)' }
 ]
 
+const locations = [
+  { name: 'Moscow', id: 524901 },
+  { name: 'London', id: 2643743 },
+  { name: 'New York', id: 5128581 },
+  { name: 'Tokyo', id: 1850147 },
+  { name: 'Sydney', id: 2147714 }
+]
+
+const selectedLocationId = ref(locations[0].id)
 Chart.register(ArcElement, Tooltip, Legend, DoughnutController, BarController, CategoryScale, LinearScale, BarElement)
 
 const message = ref('Nothing yet')
@@ -257,16 +254,14 @@ async function getMessage() {
     console.error(err)
   }
 }
+function openWeatherModal(entry) {
+  selectedWeather.value = entry
+  dialog.value = true
+  tab.value = 'weather'
+}
 async function getSecondMessage() {
-
   try {
-    // this one works, use lat long
-    // https://api.openweathermap.org/data/2.5/weather?lat=50&lon=50&appid=e09a06ce74d5a069adb6113f39fc5bee
-
-    //const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat.value}&lon=${lon.value}&appid=43be5bacfb349f774b7fc719e379e4c1`)
-
-    //"http://api.openweathermap.org/data/2.5/forecast?id=524901&appid=43be5bacfb349f774b7fc719e379e4c1"
-    const res = await fetch("http://api.openweathermap.org/data/2.5/forecast?id=524901&appid=43be5bacfb349f774b7fc719e379e4c1")
+    const res = await fetch(`http://api.openweathermap.org/data/2.5/forecast?id=${selectedLocationId.value}&appid=43be5bacfb349f774b7fc719e379e4c1`)
     const data = await res.json()
     weatherData.value = data.list.slice(0, 20)
     message.value = `Fetched ${weatherData.value.length} records.`
@@ -275,9 +270,7 @@ async function getSecondMessage() {
     console.error(err)
   }
 
-  if (weatherChart) {
-    weatherChart.destroy()
-  }
+  if (weatherChart) weatherChart.destroy()
 
   const labels = weatherData.value.map(item => item.dt_txt)
   const temps = weatherData.value.map(item => item.main.temp - 273.15)
@@ -388,46 +381,5 @@ watch(weatherData, () => {
 .app-background {
   background: linear-gradient(to bottom right, #f0f4f8, #e6ecf2);
   min-height: 100vh;
-}
-
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.6s ease;
-}
-
-.fade-slide-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.weather-card {
-  min-width: 200px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.weather-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 </style>
