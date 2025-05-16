@@ -39,23 +39,8 @@
       <h1>Vue API Test</h1>
       <p>{{ message }}</p>
 
-      <v-navigation-drawer app permanent>
-        <v-list nav dense>
-          <v-list-item-title class="text-h6 px-4 py-2">Actions</v-list-item-title>
-          <v-divider></v-divider>
-          <v-list-item>
-            <v-btn block color="primary" @click="getMessage">Get Message from API</v-btn>
-          </v-list-item>
-          <v-list-item>
-            <v-btn block color="secondary" @click="getSecondMessage">Get Weather Data</v-btn>
-          </v-list-item>
-          <v-list-item>
-            <v-select :model-value="selectedLocationId" @update:model-value="selectedLocationId = $event"
-              :items="locations" item-title="name" item-value="id" label="Select Location" dense outlined
-              class="mb-2" />
-          </v-list-item>
-        </v-list>
-      </v-navigation-drawer>
+      <NavigationDrawer :locations="locations" :selected-location-id="selectedLocationId" @get-message="getMessage"
+        @get-weather="getSecondMessage" @update:selected-location-id="selectedLocationId = $event" />
       <div style="display: flex; ; gap: 2rem; " class="mt-6">
         <v-container>
           <!-- Temperature Chart -->
@@ -97,7 +82,10 @@
         </v-container>
 
       </div>
-
+      <v-alert v-for="(alert, index) in weatherAlerts" :key="index" type="warning" border="left" prominent class="mb-3">
+        <strong>{{ alert.event }}</strong> ({{ alert.severity }})
+        <div>{{ alert.description }}</div>
+      </v-alert>
       <v-container class="pa-8">
         <alertView :selectedLocationId="selectedLocationId"
           :locationName="locations.find(loc => loc.id === selectedLocationId)?.name"
@@ -125,10 +113,8 @@ import alertView from './components/alertView.vue'
 import { AgGridVue } from 'ag-grid-vue3'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
-import { ClientSideRowModelModule } from 'ag-grid-community'
-import { ModuleRegistry } from 'ag-grid-community'
+import NavigationDrawer from './components/NavigationDrawer.vue'
 
-ModuleRegistry.registerModules([ClientSideRowModelModule])
 const dialog = ref(false)
 const tab = ref('weather')
 
@@ -260,59 +246,3 @@ watch(weatherData, () => {
   })
 })
 </script>
-
-<style scoped>
-.alert-box {
-  display: flex;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  border-left: 5px solid #005ea5;
-  max-width: 700px;
-  align-items: center;
-  background-color: #fff;
-  margin-left: 30px;
-}
-
-.alert-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 1rem;
-  min-width: 80px;
-}
-
-.alert-icon img {
-  width: 60px;
-  height: auto;
-}
-
-.warning-label {
-  font-weight: bold;
-  font-size: 0.8rem;
-  margin-top: 0.5rem;
-  color: #666;
-}
-
-.alert-content h2 {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-.alert-content a {
-  color: #005ea5;
-  text-decoration: underline;
-  display: block;
-  margin-top: 0.5rem;
-}
-
-.updated {
-  font-size: 0.85rem;
-  color: #555;
-  margin-top: 0.3rem;
-}
-
-.app-background {
-  background: linear-gradient(to bottom right, #f0f4f8, #e6ecf2);
-  min-height: 100vh;
-}
-</style>
