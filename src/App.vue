@@ -15,7 +15,6 @@
           </v-tabs>
           <v-window v-model="tab" class="mt-4">
             <v-window-item value="weather">
-              aaaaaaaaaaaaaaaaaaa
               <div style="display: flex; gap: 1rem; overflow-x: auto;">
                 <div v-if="selectedWeather" class="mb-4">
                   <h3 class="text-h6">Details for {{ selectedWeather.dt_txt }}</h3>
@@ -51,8 +50,9 @@
             <v-btn block color="secondary" @click="getSecondMessage">Get Weather Data</v-btn>
           </v-list-item>
           <v-list-item>
-            <v-select v-model="selectedLocationId" :items="locations" item-title="name" item-value="id"
-              label="Select Location" dense outlined class="mb-2"></v-select>
+            <v-select :model-value="selectedLocationId" @update:model-value="selectedLocationId = $event"
+              :items="locations" item-title="name" item-value="id" label="Select Location" dense outlined
+              class="mb-2" />
           </v-list-item>
         </v-list>
       </v-navigation-drawer>
@@ -97,12 +97,13 @@
         </v-container>
 
       </div>
-      <v-alert v-for="(alert, index) in weatherAlerts" :key="index" type="warning" border="left" prominent class="mb-3">
-        <strong>{{ alert.event }}</strong> ({{ alert.severity }})
-        <div>{{ alert.description }}</div>
-      </v-alert>
+
       <v-container class="pa-8">
-        <alertView></alertView>
+        <alertView :selectedLocationId="selectedLocationId"
+          :locationName="locations.find(loc => loc.id === selectedLocationId)?.name"
+          :minTemp="Math.min(...weatherData.map(w => w.main.temp - 273.15))"
+          :maxTemp="Math.max(...weatherData.map(w => w.main.temp - 273.15))" :avgWindSpeed="avgWindSpeed" />
+
       </v-container>
     </v-main>
   </v-app>
@@ -124,7 +125,10 @@ import alertView from './components/alertView.vue'
 import { AgGridVue } from 'ag-grid-vue3'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
+import { ClientSideRowModelModule } from 'ag-grid-community'
+import { ModuleRegistry } from 'ag-grid-community'
 
+ModuleRegistry.registerModules([ClientSideRowModelModule])
 const dialog = ref(false)
 const tab = ref('weather')
 

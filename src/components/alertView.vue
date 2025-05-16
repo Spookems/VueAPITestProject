@@ -1,93 +1,54 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12" md="4">
-                <v-select v-model="selectedLocationId" :items="locations" item-title="name" item-value="id"
-                    label="Select Location" dense outlined class="mb-2"></v-select>
-            </v-col>
-        </v-row>
-        <v-row>
-            <v-col cols="12">
-                <v-card v-if="selectedLocation && selectedWeatherData && weatherAlert">
-                    <v-card-title class="text-h6">
-                        {{ selectedLocation.name }} Weather Alert
-                    </v-card-title>
-                    <v-card-text>
-                        <v-alert :type="weatherAlert.type" border="left" colored-border elevation="2">
-                            <strong>{{ weatherAlert.title }}</strong><br />
-                            {{ weatherAlert.description }}<br /><br />
-                            <strong>Temperature Range:</strong>
-                            {{ selectedWeatherData.min }}°C to {{ selectedWeatherData.max }}°C<br />
-                            <strong>Advisory:</strong> {{ weatherAlert.advice }}
-                        </v-alert>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+    <v-card elevation="3" class="pa-6">
+        <v-card-title class="text-h6">
+            Weather Summary
+        </v-card-title>
+        <v-card-text>
+            <div v-if="locationName">
+                <p><strong>📍 City:</strong> {{ locationName }}</p>
+                <p><strong>🌡️ Min Temp:</strong> {{ minTemp.toFixed(1) }} °C</p>
+                <p><strong>🔥 Max Temp:</strong> {{ maxTemp.toFixed(1) }} °C</p>
+                <p><strong>💨 Avg Wind Speed:</strong> {{ avgWindSpeed.toFixed(1) }} m/s</p>
+                <p><strong>📝 Summary:</strong> {{ weatherSummary }} </p>
+            </div>
+            <div v-else>
+                <p>No location selected.</p>
+            </div>
+        </v-card-text>
+    </v-card>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            selectedLocationId: null,
-            locations: [
-                { id: 'london', name: 'London' },
-                { id: 'manchester', name: 'Manchester' },
-                { id: 'newcastle', name: 'Newcastle' },
-                { id: 'bristol', name: 'Bristol' }
-            ],
-            weatherData: {
-                london: { min: 10, max: 17 },
-                manchester: { min: 8, max: 15 },
-                newcastle: { min: -2, max: 3 },
-                bristol: { min: 12, max: 20 }
-            },
-            alerts: {
-                london: {
-                    type: 'warning',
-                    title: 'Heavy Rain Warning',
-                    description: 'Persistent heavy rain expected throughout the day. Localised flooding likely.',
-                    advice: 'Carry waterproof gear and avoid low-lying areas.'
-                },
-                manchester: {
-                    type: 'info',
-                    title: 'Mild and Breezy',
-                    description: 'Mild temperatures with occasional gusts of wind.',
-                    advice: 'Light jacket recommended. Exercise caution on elevated routes.'
-                },
-                newcastle: {
-                    type: 'error',
-                    title: 'Snow and Ice Warning',
-                    description: 'Snowfall likely in the evening with icy patches overnight.',
-                    advice: 'Travel disruption expected. Avoid unnecessary journeys.'
-                },
-                bristol: {
-                    type: 'success',
-                    title: 'Clear Skies Ahead',
-                    description: 'Bright and sunny all day with no precipitation.',
-                    advice: 'Ideal day for outdoor activities. Use sunscreen.'
-                }
-            }
-        };
-    },
-    computed: {
-        selectedLocation() {
-            return this.locations.find(loc => loc.id === this.selectedLocationId);
-        },
-        selectedWeatherData() {
-            return this.selectedLocation ? this.weatherData[this.selectedLocation.id] : null;
-        },
-        weatherAlert() {
-            return this.selectedLocation ? this.alerts[this.selectedLocation.id] : null;
-        }
-    }
-};
-</script>
+<script setup>
+import { computed, ref } from 'vue'
 
-<style scoped>
-.v-alert {
-    font-size: 1.1em;
-}
-</style>
+const weatherAlerts = ref([])
+
+const props = defineProps({
+    locationName: String,
+    minTemp: Number,
+    maxTemp: Number,
+    avgWindSpeed: Number
+})
+
+const weatherSummary = computed(() => {
+    const min = props.minTemp
+    const max = props.maxTemp
+    const wind = props.avgWindSpeed
+
+    let tempComment = ''
+    if (max >= 30) tempComment = "Scorching. Don't forget your SPF 5000."
+    else if (max >= 25) tempComment = "Hot and sweaty – great for BBQs, bad for armpits."
+    else if (max >= 18) tempComment = "Warm and decent. T-shirt weather."
+    else if (max >= 10) tempComment = "Cool – maybe grab a hoodie."
+    else if (max >= 0) tempComment = "Chilly. Consider thermals and regrets."
+    else tempComment = "Freezing. Stay inside unless you’re a penguin."
+
+    let windComment = ''
+    if (wind >= 15) windComment = "Windy as hell – expect hair problems and flying bins."
+    else if (wind >= 10) windComment = "Breezy – enough to be annoying."
+    else if (wind >= 5) windComment = "Light wind – good kite weather."
+    else windComment = "Still and calm – almost eerie."
+
+    return `${tempComment} ${windComment}`
+})
+</script>
