@@ -13,17 +13,8 @@
         <v-btn block color="secondary" @click="$emit('get-weather')">AG-Grid breakdown</v-btn>
       </v-list-item>
       <v-list-item>
-        <v-select
-          :model-value="selectedLocationId"
-          @update:model-value="$emit('update:selected-location-id', $event)"
-          :items="locations"
-          item-title="name"
-          item-value="id"
-          label="Select Location"
-          dense
-          outlined
-          class="mb-2"
-        />
+        <v-select :model-value="selectedLocationId" @update:model-value="$emit('update:selected-location-id', $event)"
+          :items="locations" item-title="name" item-value="id" label="Select Location" dense outlined class="mb-2" />
       </v-list-item>
     </v-list>
   </v-navigation-drawer>

@@ -26,9 +26,8 @@
               </div>
             </v-window-item>
             <v-window-item value="grid">
-              <ag-grid-vue class="ag-theme-alpine" style="height: 300px; width: 100%;" :rowData="weatherData"
-                :columnDefs="gridColumns" :domLayout="'autoHeight'"
-                :defaultColDef="{ resizable: true, sortable: true }" />
+              <ag-grid-vue class="ag-theme-alpine" style="height: 300px; width: 100%;" :rowData="gridRowData"
+                :columnDefs="gridColumns" :defaultColDef="{ resizable: true, sortable: true }" />
             </v-window-item>
           </v-window>
         </v-card-text>
@@ -62,7 +61,7 @@
               <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
               <div>☁️ {{ entry.clouds.all }}%</div>
               <div>💨 {{ entry.wind.speed }} m/s</div>
-              <v-btn style="margin-top: 100px;" @click="dialog = true" color="primary">Details</v-btn>
+              <v-btn style="margin-top: 100px;" @click="openDetails(entry)" color="primary">Details</v-btn>
             </v-card>
           </div>
         </v-container>
@@ -80,9 +79,8 @@
             </v-card-text>
           </v-card>
         </v-container>
-
       </div>
-      <v-alert v-for="(alert, index) in weatherAlerts" :key="index" type="warning" border="left" prominent class="mb-3">
+      <v-alert v-for="(alert, index) in weatherAlerts" :key="index" type="warning" prominent class="mb-3">
         <strong>{{ alert.event }}</strong> ({{ alert.severity }})
         <div>{{ alert.description }}</div>
       </v-alert>
@@ -91,7 +89,6 @@
           :locationName="locations.find(loc => loc.id === selectedLocationId)?.name"
           :minTemp="Math.min(...weatherData.map(w => w.main.temp - 273.15))"
           :maxTemp="Math.max(...weatherData.map(w => w.main.temp - 273.15))" :avgWindSpeed="avgWindSpeed" />
-
       </v-container>
     </v-main>
   </v-app>
@@ -99,9 +96,6 @@
 
 <script setup>
 import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
 import { ref, watch } from 'vue'
 import {
   Chart, ArcElement, Tooltip, Legend, DoughnutController, BarController,
@@ -114,15 +108,47 @@ import { AgGridVue } from 'ag-grid-vue3'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import NavigationDrawer from './components/NavigationDrawer.vue'
+import { ClientSideRowModelModule } from 'ag-grid-community'
+import { ModuleRegistry } from 'ag-grid-community'
+
+ModuleRegistry.registerModules([ClientSideRowModelModule])
+
+const selectedGridData = ref([])
+const selectedWeather = ref(null)
+function openDetails(entry) {
+  selectedWeather.value = entry
+  dialog.value = true
+
+  selectedGridData.value = [
+    { label: 'Temperature (°C)', value: (entry.main.temp - 273.15).toFixed(1) },
+    { label: 'Feels Like (°C)', value: (entry.main.feels_like - 273.15).toFixed(1) },
+    { label: 'Humidity (%)', value: entry.main.humidity },
+    { label: 'Cloud Cover (%)', value: entry.clouds.all },
+    { label: 'Wind Speed (m/s)', value: entry.wind.speed },
+    { label: 'Wind Direction (°)', value: entry.wind.deg },
+    { label: 'Visibility (m)', value: entry.visibility },
+    { label: 'Pressure (hPa)', value: entry.main.pressure }
+  ]
+}
+const gridRowData = ref([])
+
+watch(selectedWeather, (newWeather) => {
+  if (!newWeather) return
+  gridRowData.value = [
+    { Parameter: 'Temperature (°C)', Value: (newWeather.main.temp - 273.15).toFixed(1) },
+    { Parameter: 'Clouds (%)', Value: newWeather.clouds.all },
+    { Parameter: 'Wind Speed (m/s)', Value: newWeather.wind.speed },
+    { Parameter: 'Pressure (hPa)', Value: newWeather.main.pressure },
+    { Parameter: 'Humidity (%)', Value: newWeather.main.humidity }
+  ]
+})
 
 const dialog = ref(false)
 const tab = ref('weather')
 
 const gridColumns = [
-  { field: 'dt_txt', headerName: 'Date/Time' },
-  { field: 'main.temp', headerName: 'Temperature (K)' },
-  { field: 'clouds.all', headerName: 'Clouds (%)' },
-  { field: 'wind.speed', headerName: 'Wind (m/s)' }
+  { field: 'Parameter', headerName: 'Parameter' },
+  { field: 'Value', headerName: 'Value' }
 ]
 
 const locations = [
@@ -143,14 +169,6 @@ const windGauge = ref(null)
 let windChart = null
 const chartCanvas = ref(null)
 let weatherChart = null
-const showDetails = ref(true)
-
-
-
-const vuetify = createVuetify({
-  components,
-  directives,
-})
 
 function getCardStyle(tempK) {
   const tempC = tempK - 273.15
@@ -170,12 +188,6 @@ async function getMessage() {
     message.value = 'Error fetching message'
     console.error(err)
   }
-}
-
-function openWeatherModal(entry) {
-  selectedWeather.value = entry
-  dialog.value = true
-  tab.value = 'weather'
 }
 
 async function getSecondMessage() {
