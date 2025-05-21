@@ -20,7 +20,7 @@
   </v-navigation-drawer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineProps({
   locations: Array,
   selectedLocationId: Number

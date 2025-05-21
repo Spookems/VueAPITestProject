@@ -3,18 +3,13 @@
     <v-card-title>Forecast Data</v-card-title>
     <v-card-text>
       <div class="ag-theme-alpine" style="height: 400px; width: 100%;">
-        <AgGridVue
-          class="ag-grid"
-          :columnDefs="columnDefs"
-          :rowData="rowData"
-          :defaultColDef="defaultColDef"
-        />
+        <AgGridVue class="ag-grid" :columnDefs="columnDefs" :rowData="rowData" :defaultColDef="defaultColDef" />
       </div>
     </v-card-text>
   </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { AgGridVue } from 'ag-grid-vue3'
 import 'ag-grid-community/styles/ag-grid.css'

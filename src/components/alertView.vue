@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/block-lang -->
 <template>
   <v-card elevation="3" class="pa-6">
     <v-card-title class="text-h6">
@@ -18,19 +19,19 @@
   </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
 const props = defineProps({
   locationName: String,
-  minTemp: Number,
-  maxTemp: Number,
-  avgWindSpeed: Number
+  minTemp: { type: Number, default: 0 },
+  maxTemp: { type: Number, default: 0 },
+  avgWindSpeed: { type: Number, default: 0 }
 })
 
 const weatherSummary = computed(() => {
-  const max = props.maxTemp
-  const wind = props.avgWindSpeed
+  const max = props.maxTemp ?? 0
+  const wind = props.avgWindSpeed ?? 0
 
   let tempComment = ''
   if (max >= 30) tempComment = "Scorching. Don't forget your SPF 5000."
