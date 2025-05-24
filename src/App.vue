@@ -1,103 +1,26 @@
 <template>
   <v-app>
-
-
-
-    <v-dialog v-model="dialog" max-width="1000px">
-      <v-card>
-        <v-card-title>
-          Weather & Grid Tabs
-          <v-spacer></v-spacer>
-          <v-btn icon @click="dialog = false"><v-icon>mdi-close</v-icon></v-btn>
-        </v-card-title>
-        <v-card-text>
-          <v-tabs v-model="tab">
-            <v-tab value="weather">Weather Cards</v-tab>
-            <v-tab value="grid">AG-Grid Table
-
-
-            </v-tab>
-          </v-tabs>
-
-          <v-window v-model="tab" class="mt-4">
-            <v-window-item value="weather">
-
-              aaaaaaaaaaaaaaaaaaa
-              <div style="display: flex; gap: 1rem; overflow-x: auto;">
-                <div v-if="selectedWeather" class="mb-4">
-                  <h3 class="text-h6">Details for {{ selectedWeather.dt_txt }}</h3>
-                  <p>🌡️ Temp: {{ (selectedWeather.main.temp - 273.15).toFixed(1) }} °C</p>
-                  <p>☁️ Clouds: {{ selectedWeather.clouds.all }}%</p>
-                  <p>💨 Wind: {{ selectedWeather.wind.speed }} m/s</p>
-                  <v-progress-linear :model-value="selectedWeather.wind.speed * 3" height="10" color="blue" />
-                </div>
-              </div>
-            </v-window-item>
-
-            <v-window-item value="grid">
-
-
-
-              <ag-grid-vue class="ag-theme-alpine" style="height: 300px; width: 100%;" :rowData="weatherData"
-                :columnDefs="gridColumns" :domLayout="'autoHeight'"
-                :defaultColDef="{ resizable: true, sortable: true }" />
-            </v-window-item>
-          </v-window>
-        </v-card-text>
-
-
-
-
-      </v-card>
-    </v-dialog>
+    <WeatherDialog v-model:dialog="dialog" v-model:tab="tab" :selected-weather="selectedWeather"
+      :grid-row-data="gridRowData" :grid-columns="gridColumns" />
     <v-main>
-
       <h1>Vue API Test</h1>
       <p>{{ message }}</p>
 
-      <v-navigation-drawer app permanent>
-        <v-list nav dense>
-          <v-list-item-title class="text-h6 px-4 py-2">Actions</v-list-item-title>
-          <v-divider></v-divider>
-          <v-list-item>
-            <v-btn block color="primary" @click="getMessage">Get Message from API</v-btn>
-          </v-list-item>
-          <v-list-item>
-            <v-btn block color="secondary" @click="getSecondMessage">Get Weather Data</v-btn>
-          </v-list-item>
-        </v-list>
-      </v-navigation-drawer>
-      <div style="display: flex; ; gap: 2rem; " class="mt-6">
-        <v-container>
+      <NavigationDrawer :locations="locations" :selected-location-id="selectedLocationId" @get-message="getMessage"
+        @get-weather="getSecondMessage" @update:selected-location-id="selectedLocationId = $event" />
 
-          <!-- Wind Speed Gauge -->
-          <v-card class="mt-5" elevation="4">
-            <v-card-title>Temperatures</v-card-title>
-            <v-card-text>
-              <v-responsive style="height: 300px;">
-                <canvas ref="chartCanvas"></canvas>
-              </v-responsive>
-            </v-card-text>
-          </v-card>
+      <div style="display: flex; gap: 2rem;" class="mt-6">
+        <v-container>
+          <TemperatureChart :weatherData="weatherData" />
         </v-container>
-        <v-container>
-          <!-- Scrollable Weather Cards -->
-          <div style="display: flex; gap: 1rem;overflow-x: auto; width: 1000px; height: 300px;">
-            <v-card v-for="(entry, index) in weatherData" :key="index" :style="getCardStyle(entry.main.temp)"
-              class="pa-4" style="min-width: 200px;">
-              <div><strong>{{ entry.dt_txt }}</strong></div>
-              <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
-              <div>☁️ {{ entry.clouds.all }}%</div>
-              <div>💨 {{ entry.wind.speed }} m/s</div>
-              <v-btn style="margin-top: 100px;" @click="dialog = true" color="primary">Details</v-btn>
-            </v-card>
-          </div>
 
+        <v-container>
+          <WeatherCardList :weatherData="weatherData" @details="openDetails" />
         </v-container>
-        <v-container>
 
+        <v-container>
           <!-- Wind Speed Gauge -->
-          <v-card elevation="4" class="pa-4" style="min-width: 300px; ">
+          <v-card elevation="4" class="pa-4" style="min-width: 300px;">
             <v-card-title>Average Wind Speed</v-card-title>
             <v-card-text>
               <v-responsive style="height: 200px;">
@@ -109,131 +32,126 @@
             </v-card-text>
           </v-card>
         </v-container>
+      </div>
 
-      </div>
-      <div class="alert-box">
-        <div class="alert-icon">
-          <img src="@/assets/flood-warning.png" alt="Flood warning icon" />
-          <span class="warning-label">WARNING</span>
-        </div>
-        <div class="alert-content">
-          <h2>Flood alerts in force for England</h2>
-          <a href="https://www.gov.uk/check-flooding" target="_blank">Environment Agency</a>
-          <p class="updated">Updated: 13:53 (UTC+1) on Fri 2 May 2025</p>
-        </div>
-      </div>
+      <v-alert v-for="(alert, index) in weatherAlerts" :key="index" type="warning" prominent class="mb-3">
+        <strong>{{ alert.event }}</strong> ({{ alert.severity }})
+        <div>{{ alert.description }}</div>
+      </v-alert>
+
       <v-container class="pa-8">
-        <v-card elevation="2" class="pa-4">
-          <h2 class="text-h5 font-weight-bold mb-4">North East England weather forecast</h2>
-
-          <!-- Toggle Button -->
-          <v-btn @click="showDetails = !showDetails" color="grey lighten-2" variant="flat" class="mb-4">
-            {{ showDetails ? 'Hide' : 'Show' }} forecast
-            <v-icon end>{{ showDetails ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-          </v-btn>
-
-          <!-- Expandable Content -->
-          <v-expand-transition>
-            <div v-show="showDetails">
-              <v-card class="pa-4" variant="tonal">
-                <p><strong>Headline:</strong><br>Friday, dry with bright or sunny spells. Cooler.</p>
-
-                <p><strong>Today:</strong><br>
-                  Largely fine and dry, with some bright or sunny spells. Most parts a little cloudier in the afternoon.
-                  Feeling noticeably cooler than of late, but still warm in sunshine.
-                  Generally light winds. Maximum temperature 17 °C.
-                </p>
-
-                <p><strong>Tonight:</strong><br>
-                  It will be a dry night with clear periods and generally light winds,
-                  allowing temperatures to become chilly for most. Minimum temperature 4 °C.
-                </p>
-
-                <p><strong>Saturday:</strong><br>
-                  Generally dry with bright or sunny spells, just the chance of an isolated light shower.
-                  Feeling noticeably cooler in an increasing breeze. Maximum temperature 15 °C.
-                </p>
-
-                <p><strong>Outlook for Sunday to Tuesday:</strong><br>
-                  Mainly dry conditions with bright or sunny spells.
-                  However variable, occasionally large amounts of cloud, also giving a few light showers.
-                  Brisk winds, easing later. Feeling much cooler.
-                </p>
-
-                <p class="text-caption mt-4">
-                  <em>Updated: 05:00 (UTC+1) on Fri 2 May 2025</em>
-                </p>
-              </v-card>
-            </div>
-          </v-expand-transition>
-        </v-card>
+        <AlertView :selectedLocationId="selectedLocationId"
+          :locationName="locations.find((loc) => loc.id === selectedLocationId)?.name"
+          :minTemp="Math.min(...weatherData.map((w) => w.main.temp - 273.15))"
+          :maxTemp="Math.max(...weatherData.map((w) => w.main.temp - 273.15))" :avgWindSpeed="avgWindSpeed" />
       </v-container>
     </v-main>
-
-
-
   </v-app>
-
-
 </template>
 
-
-
-<script setup>
+<script setup lang="ts">
 import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
 import { ref, watch } from 'vue'
 import {
-  Chart, ArcElement, Tooltip, Legend, DoughnutController, BarController,
+  Chart,
+  ArcElement,
+  Tooltip,
+  Legend,
+  DoughnutController,
+  BarController,
   CategoryScale,
   LinearScale,
   BarElement
 } from 'chart.js'
 
-import { AgGridVue } from 'ag-grid-vue3'
+import AlertView from './components/AlertView.vue'
+import NavigationDrawer from './components/NavigationDrawer.vue'
+import WeatherDialog from './components/WeatherDialog.vue'
+import WeatherCardList from './components/WeatherCardList.vue'
+import TemperatureChart from './components/TemperatureChart.vue'
+
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
+import { ClientSideRowModelModule } from 'ag-grid-community'
+import { ModuleRegistry } from 'ag-grid-community'
+import type { WeatherEntry } from './Interfaces/WeatherData'
 
-const dialog = ref(false)
-const tab = ref('weather')
+ModuleRegistry.registerModules([ClientSideRowModelModule])
 
-const gridColumns = [
-  { field: 'dt_txt', headerName: 'Date/Time' },
-  { field: 'main.temp', headerName: 'Temperature (K)' },
-  { field: 'clouds.all', headerName: 'Clouds (%)' },
-  { field: 'wind.speed', headerName: 'Wind (m/s)' }
+
+interface WeatherAlert {
+  event: string
+  severity: string
+  description: string
+}
+
+interface GridRow {
+  Parameter: string
+  Value: string | number
+}
+
+// Refs with explicit types
+const dialog = ref<boolean>(false)
+const tab = ref<string>('weather')
+const message = ref<string>('Nothing yet')
+const selectedLocationId = ref<number>(2643743) // London default
+
+const weatherData = ref<WeatherEntry[]>([])
+const selectedWeather = ref<WeatherEntry | null>(null)
+const weatherAlerts = ref<WeatherAlert[]>([])
+
+const gridRowData = ref<GridRow[]>([])
+const avgWindSpeed = ref<number>(0)
+
+const chartCanvas = ref<HTMLCanvasElement | null>(null)
+const windGauge = ref<HTMLCanvasElement | null>(null)
+
+let weatherChart: Chart | null = null
+let windChart: Chart | null = null
+
+const locations = [
+  { name: 'Moscow', id: 524901 },
+  { name: 'London', id: 2643743 },
+  { name: 'New York', id: 5128581 },
+  { name: 'Tokyo', id: 1850147 },
+  { name: 'Sydney', id: 2147714 }
 ]
 
-Chart.register(ArcElement, Tooltip, Legend, DoughnutController, BarController, CategoryScale, LinearScale, BarElement)
+const gridColumns = [
+  { field: 'Parameter', headerName: 'Parameter' },
+  { field: 'Value', headerName: 'Value' }
+]
 
-const message = ref('Nothing yet')
-const weatherData = ref([])
-const avgWindSpeed = ref(0)
-const windGauge = ref(null)
-let windChart = null
-const chartCanvas = ref(null)
-let weatherChart = null
-const showDetails = ref(true)
+function openDetails(entry: WeatherEntry) {
+  selectedWeather.value = entry
+  dialog.value = true
 
-const vuetify = createVuetify({
-  components,
-  directives,
-})
-
-function getCardStyle(tempK) {
-  const tempC = tempK - 273.15
-  const redIntensity = Math.min(255, Math.max(0, Math.round((tempC / 40) * 255)))
-  return {
-    backgroundColor: `rgb(${redIntensity}, 50, 50)`,
-    color: '#fff'
-  }
+  gridRowData.value = [
+    { Parameter: 'Temperature (°C)', Value: (entry.main.temp - 273.15).toFixed(1) },
+    { Parameter: 'Feels Like (°C)', Value: (entry.main.feels_like - 273.15).toFixed(1) },
+    { Parameter: 'Humidity (%)', Value: entry.main.humidity },
+    { Parameter: 'Cloud Cover (%)', Value: entry.clouds.all },
+    { Parameter: 'Wind Speed (m/s)', Value: entry.wind.speed },
+    { Parameter: 'Wind Direction (°)', Value: entry.wind.deg },
+    { Parameter: 'Visibility (m)', Value: entry.visibility },
+    { Parameter: 'Pressure (hPa)', Value: entry.main.pressure }
+  ]
 }
+
+watch(selectedWeather, (newWeather) => {
+  if (!newWeather) return
+  gridRowData.value = [
+    { Parameter: 'Temperature (°C)', Value: (newWeather.main.temp - 273.15).toFixed(1) },
+    { Parameter: 'Clouds (%)', Value: newWeather.clouds.all },
+    { Parameter: 'Wind Speed (m/s)', Value: newWeather.wind.speed },
+    { Parameter: 'Pressure (hPa)', Value: newWeather.main.pressure },
+    { Parameter: 'Humidity (%)', Value: newWeather.main.humidity }
+  ]
+})
 
 async function getMessage() {
   try {
-    const res = await fetch("https://localhost:7010/api/message")
+    const res = await fetch('https://localhost:7010/api/message')
     const data = await res.json()
     message.value = data.message
   } catch (err) {
@@ -241,45 +159,35 @@ async function getMessage() {
     console.error(err)
   }
 }
-function openWeatherModal(entry) {
-  selectedWeather.value = entry
-  dialog.value = true
-  tab.value = 'weather'
-}
+
 async function getSecondMessage() {
-
-
   try {
-    // this one works, use lat long
-    // https://api.openweathermap.org/data/2.5/weather?lat=50&lon=50&appid=e09a06ce74d5a069adb6113f39fc5bee
-
-
-    //"http://api.openweathermap.org/data/2.5/forecast?id=524901&appid=43be5bacfb349f774b7fc719e379e4c1"
-    const res = await fetch("http://api.openweathermap.org/data/2.5/forecast?id=524901&appid=43be5bacfb349f774b7fc719e379e4c1")
+    const res = await fetch(
+      `http://api.openweathermap.org/data/2.5/forecast?id=${selectedLocationId.value}&appid=43be5bacfb349f774b7fc719e379e4c1`
+    )
     const data = await res.json()
     weatherData.value = data.list.slice(0, 20)
-    message.value = `Fetched ${weatherData.value.length} records.`
   } catch (err) {
     message.value = 'Error fetching weather data'
     console.error(err)
   }
 
-  if (weatherChart) {
-    weatherChart.destroy()
-  }
+  if (weatherChart) weatherChart.destroy()
 
-  const labels = weatherData.value.map(item => item.dt_txt)
-  const temps = weatherData.value.map(item => item.main.temp - 273.15)
+  const labels = weatherData.value.map((item) => item.dt_txt)
+  const temps = weatherData.value.map((item) => item.main.temp - 273.15)
 
-  weatherChart = new Chart(chartCanvas.value, {
+  weatherChart = new Chart(chartCanvas.value as HTMLCanvasElement, {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        label: 'Temperature (°C)',
-        data: temps,
-        backgroundColor: '#1976D2'
-      }]
+      datasets: [
+        {
+          label: 'Temperature (°C)',
+          data: temps,
+          backgroundColor: '#1976D2'
+        }
+      ]
     },
     options: {
       responsive: true,
@@ -294,23 +202,24 @@ async function getSecondMessage() {
 }
 
 watch(weatherData, () => {
-  const winds = weatherData.value.map(e => e.wind.speed)
+  const winds = weatherData.value.map((e) => e.wind.speed)
   avgWindSpeed.value = winds.reduce((a, b) => a + b, 0) / winds.length
 
   if (windChart) windChart.destroy()
 
-  windChart = new Chart(windGauge.value, {
+  windChart = new Chart(windGauge.value as HTMLCanvasElement, {
     type: 'doughnut',
     data: {
       labels: ['Wind Speed', 'Remaining'],
-      datasets: [{
-        data: [avgWindSpeed.value, 30 - avgWindSpeed.value],
-        backgroundColor: ['#1976D2', '#E0E0E0'],
-        borderWidth: 0,
-        circumference: 180,
-        rotation: 270,
-        cutout: '70%',
-      }]
+      datasets: [
+        {
+          data: [avgWindSpeed.value, 30 - avgWindSpeed.value],
+          backgroundColor: ['#1976D2', '#E0E0E0'],
+          borderWidth: 0,
+          circumference: 180,
+          rotation: 270
+        }
+      ]
     },
     options: {
       plugins: {
@@ -322,60 +231,19 @@ watch(weatherData, () => {
     }
   })
 })
+
+Chart.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  DoughnutController,
+  BarController,
+  CategoryScale,
+  LinearScale,
+  BarElement
+)
+
+// Initial fetches
+//getMessage()
+//getSecondMessage()
 </script>
-
-<style scoped>
-.alert-box {
-  display: flex;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  border-left: 5px solid #005ea5;
-  max-width: 700px;
-  align-items: center;
-  background-color: #fff;
-  margin-left: 30px;
-}
-
-.alert-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 1rem;
-  min-width: 80px;
-}
-
-.alert-icon img {
-  width: 60px;
-  height: auto;
-}
-
-.warning-label {
-  font-weight: bold;
-  font-size: 0.8rem;
-  margin-top: 0.5rem;
-  color: #666;
-}
-
-.alert-content h2 {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-.alert-content a {
-  color: #005ea5;
-  text-decoration: underline;
-  display: block;
-  margin-top: 0.5rem;
-}
-
-.updated {
-  font-size: 0.85rem;
-  color: #555;
-  margin-top: 0.3rem;
-}
-
-.app-background {
-  background: linear-gradient(to bottom right, #f0f4f8, #e6ecf2);
-  min-height: 100vh;
-}
-</style>
