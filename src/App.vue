@@ -5,7 +5,18 @@
     <v-main>
       <h1>Vue API Test</h1>
       <p>{{ message }}</p>
+      <div class="weather-container">
+        <input type="text" v-model="inputValue" placeholder="Enter city name" />
+        <button @click="getWeatherForCity(inputValue)">Get Weather</button>
 
+        <transition name="fade-slide">
+          <div v-if="personalisedWeatherData" class="weather-card">
+            <h2>{{ personalisedWeatherData.city }}</h2>
+            <p>🌡️ Temperature: {{ personalisedWeatherData.temp }} °C</p>
+            <p>💨 Wind Speed: {{ personalisedWeatherData.windSpeed }} m/s</p>
+          </div>
+        </transition>
+      </div>
       <NavigationDrawer :locations="locations" :selected-location-id="selectedLocationId" @get-message="getMessage"
         @get-weather="getSecondMessage" @update:selected-location-id="selectedLocationId = $event" />
 
@@ -142,6 +153,8 @@ const windGauge = ref<HTMLCanvasElement | null>(null)
 
 let weatherChart: Chart | null = null
 let windChart: Chart | null = null
+const inputValue = ref('');
+const personalisedWeatherData = ref<null | { city: string; temp: number; windSpeed: number }>(null);
 
 const locations = [
   { name: 'Moscow', id: 524901 },
@@ -203,6 +216,7 @@ async function getMessage() {
   }
 }
 
+// Example call for Tokyo : https://api.openweathermap.org/data/2.5/forecast?id=1850147&appid=43be5bacfb349f774b7fc719e379e4c1
 async function getSecondMessage() {
   try {
     const res = await fetch(
@@ -210,14 +224,16 @@ async function getSecondMessage() {
     )
     const data = await res.json()
     weatherData.value = data.list.slice(0, 20)
+    message.value = 'Success'
   } catch (err) {
     message.value = 'Error fetching weather data'
     console.error(err)
   }
 
   if (weatherChart) weatherChart.destroy()
-
   const labels = weatherData.value.map((item) => item.dt_txt)
+
+  // Celsius to Kelvin conversion
   const temps = weatherData.value.map((item) => item.main.temp - 273.15)
 
   weatherChart = new Chart(chartCanvas.value as HTMLCanvasElement, {
@@ -242,6 +258,23 @@ async function getSecondMessage() {
       }
     }
   })
+}
+// for ref this works https://api.openweathermap.org/data/2.5/weather?lat=1&lon=1&appid=43be5bacfb349f774b7fc719e379e4c1&units=metric
+async function getWeatherForCity(cityName = "", apiKey = '43be5bacfb349f774b7fc719e379e4c1') {
+
+  const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${apiKey}`);
+  const geoData = await geoRes.json();
+  if (!geoData.length) throw new Error('City not found');
+
+  const { lat, lon, name } = geoData[0];
+  const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
+  const data = await weatherRes.json();
+
+  personalisedWeatherData.value = {
+    city: name,
+    temp: data.main.temp,
+    windSpeed: data.wind.speed
+  };
 }
 
 watch(weatherData, () => {
@@ -287,6 +320,56 @@ Chart.register(
 )
 
 // Initial fetches
-getMessage()
-getSecondMessage()
+//getMessage()
+//getSecondMessage()
 </script>
+<style scoped>
+.weather-container {
+  max-width: 400px;
+  margin: 20px auto;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+input {
+  padding: 8px;
+  width: 70%;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.weather-card {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #dbeafe, #93c5fd);
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.6s ease;
+}
+
+.fade-slide-enter-active {
+  transition: all 0.5s ease;
+}
+
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+</style>
