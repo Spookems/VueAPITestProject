@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/block-lang -->
 <template>
   <v-card elevation="3" class="pa-6">
     <v-card-title class="text-h6">
