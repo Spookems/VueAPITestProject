@@ -1,8 +1,9 @@
 <template>
-  <v-app>
+  <v-app class="full-width-wrapper pa-0 fill-width" >
+    <v-main>
     <WeatherDialog v-model:dialog="dialog" v-model:tab="tab" :selected-weather="selectedWeather"
       :grid-row-data="gridRowData" :grid-columns="gridColumns" />
-    <v-main>
+
       <h1>Vue API Test</h1>
       <p>{{ message }}</p>
       <div class="weather-container">
@@ -20,21 +21,21 @@
       <NavigationDrawer :locations="locations" :selected-location-id="selectedLocationId" @get-message="getMessage"
         @get-weather="getSecondMessage" @update:selected-location-id="selectedLocationId = $event" />
 
-      <div style="display: flex; gap: 2rem;" class="mt-6">
-        <v-container>
+      <div style="display: flex; gap: 2rem; overflow-x: auto; flex-wrap: nowrap;" class="mt-6">
+        <v-container style="min-width: 20%">
           <TemperatureChart :weatherData="weatherData" />
         </v-container>
 
-        <v-container>
+        <v-container style="min-width: 50vw;">
           <WeatherCardList :weatherData="weatherData" @details="openDetails" />
         </v-container>
 
-        <v-container>
+        <v-container style="min-width: 20%">
           <!-- Wind Speed Gauge -->
-          <v-card elevation="4" class="pa-4" style="min-width: 300px;">
+          <v-card class="mt-5 mr-8" elevation="4">
             <v-card-title>Average Wind Speed</v-card-title>
             <v-card-text>
-              <v-responsive style="height: 200px;">
+              <v-responsive style="height: 300px;">
                 <canvas ref="windGauge"></canvas>
               </v-responsive>
               <div class="text-center mt-2">
@@ -75,7 +76,7 @@ import {
   BarElement
 } from 'chart.js'
 
-import AlertView from './components/AlertView.vue'
+import AlertView from './components/alertView.vue'
 import NavigationDrawer from './components/NavigationDrawer.vue'
 import WeatherDialog from './components/WeatherDialog.vue'
 import WeatherCardList from './components/WeatherCardList.vue'

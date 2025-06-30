@@ -1,7 +1,18 @@
 @import './base.css';
+.full-width-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
 
+main {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
 #app {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
