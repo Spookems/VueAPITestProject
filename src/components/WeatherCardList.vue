@@ -1,6 +1,7 @@
 
 <template>
-  <div style="display: flex; gap: 1rem; overflow-x: auto; width: 1000px; height: 300px;">
+  <div style="display: flex; gap: 1rem; overflow-x: auto; width: 100%; height: 300px;">
+
     <v-card
       v-for="(entry, index) in weatherData"
       :key="index"
