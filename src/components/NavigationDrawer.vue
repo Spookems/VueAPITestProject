@@ -10,7 +10,11 @@
         <v-btn block color="secondary" @click="$emit('get-weather')">Get Weather Data</v-btn>
       </v-list-item>
       <v-list-item>
-        <v-btn block color="secondary" @click="$emit('get-weather')">AG-Grid breakdown</v-btn>
+        <v-list-item>
+          <v-btn block color="primary" class="ma-2" to="/users/UsersIndex" router>
+            Users Section
+          </v-btn>
+        </v-list-item>
       </v-list-item>
       <v-list-item>
         <v-select :model-value="selectedLocationId" @update:model-value="$emit('update:selected-location-id', $event)"
