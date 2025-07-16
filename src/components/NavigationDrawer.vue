@@ -16,11 +16,25 @@
         <v-select :model-value="selectedLocationId" @update:model-value="$emit('update:selected-location-id', $event)"
           :items="locations" item-title="name" item-value="id" label="Select Location" dense outlined class="mb-2" />
       </v-list-item>
+
+      <v-list-item>
+
+        <button @click="goToUsersSection">Go to About</button>
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
 
 <script setup lang="ts">
+
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goToUsersSection() {
+  router.push('/users')
+}
+
 defineProps({
   locations: Array,
   selectedLocationId: Number
