@@ -20,7 +20,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js'
-import type { WeatherEntry } from '../Interfaces/WeatherData'
+import type { WeatherEntry } from '../../Interfaces/WeatherData'
 
 const props = defineProps<{
   weatherData: WeatherEntry[]

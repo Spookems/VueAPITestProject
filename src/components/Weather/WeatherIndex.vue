@@ -80,14 +80,15 @@ import {
 import AlertView from './alertView.vue'
 import NavigationDrawer from './NavigationDrawer.vue'
 import WeatherDialog from './WeatherDialog.vue'
-import WeatherCardList from './WeatherCardList.vue'
 import TemperatureChart from './TemperatureChart.vue'
+import WeatherCardList from './WeatherCardList.vue'
+
 
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import { ClientSideRowModelModule } from 'ag-grid-community'
 import { ModuleRegistry } from 'ag-grid-community'
-import type { WeatherEntry } from '../Interfaces/WeatherData'
+import type { WeatherEntry } from '../../Interfaces/WeatherData'
 
 ModuleRegistry.registerModules([ClientSideRowModelModule])
 

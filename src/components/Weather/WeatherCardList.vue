@@ -1,14 +1,8 @@
-
 <template>
   <div style="display: flex; gap: 1rem; overflow-x: auto; width: 100%; height: 300px;">
 
-    <v-card
-      v-for="(entry, index) in weatherData"
-      :key="index"
-      :style="getCardStyle(entry.main.temp)"
-      class="pa-4"
-      style="min-width: 200px;"
-    >
+    <v-card v-for="(entry, index) in weatherData" :key="index" :style="getCardStyle(entry.main.temp)" class="pa-4"
+      style="min-width: 200px;">
       <div><strong>{{ entry.dt_txt }}</strong></div>
       <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
       <div>☁️ {{ entry.clouds.all }}%</div>
@@ -24,7 +18,7 @@
 
 
 import { defineProps } from 'vue'
-import type { WeatherEntry } from '../Interfaces/WeatherData'
+import type { WeatherEntry } from '../../Interfaces/WeatherData'
 
 const { weatherData } = defineProps<{
   weatherData: WeatherEntry[]
