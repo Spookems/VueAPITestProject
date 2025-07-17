@@ -16,4 +16,11 @@ export default [
   ...pluginVue.configs['flat/essential'],
   ...vueTsEslintConfig(),
   skipFormatting,
+
+  {
+    name: 'app/override-vue-block-lang',
+    rules: {
+      'vue/block-lang': 'off',
+    },
+  },
 ]
