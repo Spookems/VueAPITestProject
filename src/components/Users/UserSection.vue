@@ -1,14 +1,34 @@
 <template>
   <div class="page-container">
-    <div class="button-group">
-      <button @click="startPolling" class="btn btn-primary">🔄 Start Polling Users</button>
-      <button @click="showAddUserModal = true" class="btn btn-success">➕ Add New User</button>
+    <div class="button-group" style="place-content: center; transition: transform 0.5s ease;">
+      <button @click="startPolling" class="btn btn-primary" style="transition: transform 0.5s ease;">🔄 Start Polling
+        Users</button>
+      <button @click="showAddUserModal = true" class="btn btn-success" style="transition: transform 0.5s ease;">➕ Add
+        New User</button>
+
+      <transition name="slide-fade">
+        <div v-if="showDetailGrid">
+          <button @click="showAddUserModal = true" class="btn btn-success">➕ Add User Permission</button>
+        </div>
+
+      </transition>
     </div>
-    <div class="ag-theme-quartz styled-grid">
-      <AgGridVue :rowData="users" :columnDefs="columnDefs" domLayout="autoHeight" theme="legacy" />
+    <div class="row">
+
+      <div class="ag-theme-quartz styled-grid" :class="{ 'shift-left': showDetailGrid }" style="position: absolute; width: 50%;
+   left: 24%">
+        <AgGridVue :rowData="users" :columnDefs="columnDefs" domLayout="autoHeight" theme="legacy"
+          @rowClicked="onRowClicked" />
+      </div>
+
+      <transition name="slide-fade">
+        <div v-if="showDetailGrid" class="detail-grid ag-theme-quartz styled-grid">
+          <AgGridVue :rowData="detailGridData" :columnDefs="permissionsColumnDefs" domLayout="autoHeight" />
+        </div>
+      </transition>
+    </div>
 
 
-    </div>
     <!-- Modal -->
     <div v-if="showAddUserModal" class="modal-overlay">
       <div class="modal">
@@ -58,6 +78,8 @@ const users = ref([])
 
 const validationMessage = ref('')
 const saveResultMessage = ref('')
+const showDetailGrid = ref(false)
+const detailGridData = ref([])
 
 const columnDefs = [
   { headerName: 'User ID', field: 'userId', flex: 1 },
@@ -65,7 +87,11 @@ const columnDefs = [
   { headerName: 'Last Name', field: 'lastName', flex: 1 },
   { headerName: 'Email', field: 'email', flex: 1 },
 ]
-
+const permissionsColumnDefs = [
+  { headerName: 'User ID', field: 'userId', flex: 1 },
+  { headerName: 'Permission Name', field: 'permissionName', flex: 1 },
+  { headerName: 'Created At', field: 'createdAt', flex: 1 },
+]
 const showAddUserModal = ref(false)
 
 const newUser = ref({
@@ -127,6 +153,18 @@ async function submitNewUser() {
   showAddUserModal.value = false
 
   fetchUsers();
+}
+
+async function onRowClicked(event) {
+  const userId = event.data.userId
+  try {
+    const response = await fetch(`https://localhost:7010/api/Users/GetUserPermissions/${userId}`)
+    const data = await response.json()
+    detailGridData.value = Array.isArray(data) ? data : [data]
+    showDetailGrid.value = true
+  } catch (err) {
+    console.error('Failed to fetch user:', err)
+  }
 }
 </script>
 
@@ -228,5 +266,61 @@ async function submitNewUser() {
 
 .text-success {
   color: #28a745;
+}
+
+.grid-container {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  transition: transform 0.5s ease;
+}
+
+.shift-left {
+  transform: translateX(-45%);
+}
+
+.grid-container.shift-left {
+  transform: translateX(-50%);
+}
+
+.main-grid,
+.detail-grid {
+  width: 100%;
+  transition: opacity 0.5s ease;
+}
+
+.detail-grid {
+  position: absolute;
+  max-width: 40%;
+  right: 5%;
+}
+
+/* Slide-fade transition */
+.slide-fade-enter-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.slide-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.slide-fade-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-fade-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
 }
 </style>
