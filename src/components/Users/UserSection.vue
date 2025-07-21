@@ -4,10 +4,11 @@
       <button @click="startPolling" class="btn btn-primary">🔄 Start Polling Users</button>
       <button @click="showAddUserModal = true" class="btn btn-success">➕ Add New User</button>
     </div>
+    <div class="ag-theme-quartz styled-grid">
+      <AgGridVue :rowData="users" :columnDefs="columnDefs" domLayout="autoHeight" theme="legacy" />
 
-    <AgGridVue class="styled-grid" theme="ag-theme-quartz" :rowData="users" :columnDefs="columnDefs"
-      domLayout="autoHeight" />
 
+    </div>
     <!-- Modal -->
     <div v-if="showAddUserModal" class="modal-overlay">
       <div class="modal">
@@ -39,8 +40,13 @@ import { AgGridVue } from 'ag-grid-vue3'
 import { ModuleRegistry } from 'ag-grid-community'
 import { ClientSideRowModelModule } from 'ag-grid-community'
 import { ValidationModule } from 'ag-grid-community'
-
+import { provideGlobalGridOptions } from 'ag-grid-community';
+import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-quartz.css'
+// Mark all grids as using legacy themes
+provideGlobalGridOptions({
+  theme: "legacy",
+});
 
 // Register required modules
 ModuleRegistry.registerModules([
@@ -74,7 +80,7 @@ function startPolling() {
 
 async function fetchUsers() {
   try {
-    const response = await fetch('https://localhost:7010/UsersController')
+    const response = await fetch('https://localhost:7010/api/Users/GetAllUsers')
     const data = await response.json()
     users.value = Array.isArray(data) ? data : [data]
   } catch (error) {
@@ -92,7 +98,7 @@ async function submitNewUser() {
   }
 
   try {
-    const response = await fetch('https://localhost:7010/UsersController', {
+    const response = await fetch('https://localhost:7010/api/Users/AddUser', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -119,6 +125,8 @@ async function submitNewUser() {
 
   newUser.value = { firstName: '', lastName: '', email: '' }
   showAddUserModal.value = false
+
+  fetchUsers();
 }
 </script>
 
