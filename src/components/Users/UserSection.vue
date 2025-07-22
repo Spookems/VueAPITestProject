@@ -15,19 +15,33 @@
     </div>
     <div class="row">
 
-      <div class="ag-theme-quartz styled-grid" :class="{ 'shift-left': showDetailGrid }" style="position: absolute; width: 50%;
-   left: 24%">
+      <div class="ag-theme-quartz styled-grid" :class="{ 'shift-left': showDetailGrid }"
+        style="position: absolute; width: 50%; left: 24%">
+
+        <h3 class="pl-4">Users</h3>
         <AgGridVue :rowData="users" :columnDefs="columnDefs" domLayout="autoHeight" theme="legacy"
           @rowClicked="onRowClicked" />
       </div>
 
+
+
+    </div>
+    <div style="justify-items: right; gap: 4px;">
+      <transition name="slide-fade">
+        <div v-if="showDetailGrid" class="detail-grid ag-theme-quartz styled-grid mb-3">
+          <h3 class="pl-4">User Permissions</h3>
+          <AgGridVue :rowData="detailGridData" :columnDefs="permissionsColumnDefs" domLayout="autoHeight" />
+        </div>
+      </transition>
+
       <transition name="slide-fade">
         <div v-if="showDetailGrid" class="detail-grid ag-theme-quartz styled-grid">
+
+          <h3 class="pl-4">User Permissions</h3>
           <AgGridVue :rowData="detailGridData" :columnDefs="permissionsColumnDefs" domLayout="autoHeight" />
         </div>
       </transition>
     </div>
-
 
     <!-- Modal -->
     <div v-if="showAddUserModal" class="modal-overlay">
