@@ -22,29 +22,32 @@
       <NavigationDrawer :locations="locations" :selected-location-id="selectedLocationId" @get-message="getMessage"
         @get-weather="getSecondMessage" @update:selected-location-id="selectedLocationId = $event" />
 
-      <div style="display: flex; gap: 2rem; overflow-x: auto; flex-wrap: nowrap;" class="mt-6">
-        <v-container style="min-width: 20%">
+      <div style="display: flex; overflow-x: auto; flex-wrap: nowrap; margin: 0;">
+        <v-container style="max-width: 12vw; min-width: 300px; padding: 0;">
           <TemperatureChart :weatherData="weatherData" />
         </v-container>
 
-        <v-container style="min-width: 50vw;">
+
+        <v-container class="weather-card-container"
+          style="width: 50vw; overflow: hidden; margin: 10px; padding: 0; flex-shrink: 1;">
           <WeatherCardList :weatherData="weatherData" @details="openDetails" />
         </v-container>
 
-        <v-container style="min-width: 20%">
-          <!-- Wind Speed Gauge -->
-          <v-card class="mt-5 mr-8" elevation="4">
+
+        <v-container style="padding: 0; right: 0; padding-right: 3vw; width: 20vw; min-width: 300px; flex-shrink: 0;">
+          <v-card class="mr-4" elevation="4">
             <v-card-title>Average Wind Speed</v-card-title>
             <v-card-text>
               <v-responsive style="height: 300px;">
                 <canvas ref="windGauge"></canvas>
               </v-responsive>
-              <div class="text-center mt-2">
+              <div class="text-center">
                 <strong>{{ avgWindSpeed.toFixed(1) }} m/s</strong>
               </div>
             </v-card-text>
           </v-card>
         </v-container>
+
       </div>
 
       <v-alert v-for="(alert, index) in weatherAlerts" :key="index" type="warning" prominent class="mb-3">
@@ -331,5 +334,11 @@ button {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(20px);
+}
+
+@media (max-width: 1100px) {
+  .weather-card-container {
+    display: none;
+  }
 }
 </style>

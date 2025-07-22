@@ -16,10 +16,8 @@
         <v-select :model-value="selectedLocationId" @update:model-value="$emit('update:selected-location-id', $event)"
           :items="locations" item-title="name" item-value="id" label="Select Location" dense outlined class="mb-2" />
       </v-list-item>
-
       <v-list-item>
-
-        <button @click="goToUsersSection">Go to About</button>
+        <v-btn block color="secondary" @click="goToUsersSection">Go to About</v-btn>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>

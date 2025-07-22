@@ -9,7 +9,3 @@
 <script setup lang="ts">
 import 'vuetify/styles'
 </script>
-
-<style scoped>
-/* Optional: Add global styles */
-</style>

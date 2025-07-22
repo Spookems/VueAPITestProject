@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="internalDialog" max-width="1000px">
+  <v-dialog v-model="internalDialog" max-width="10%">
     <v-card>
       <v-card-title>
         Weather & Grid Tabs

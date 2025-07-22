@@ -1,8 +1,8 @@
 <template>
-  <div style="display: flex; gap: 1rem; overflow-x: auto; width: 100%; height: 300px;">
+  <div style="display: flex; gap: 1rem; height: 300px; overflow-x: scroll;
+  max-width: 100%;">
 
-    <v-card v-for="(entry, index) in weatherData" :key="index" :style="getCardStyle(entry.main.temp)" class="pa-4"
-      style="min-width: 200px;">
+    <v-card v-for="(entry, index) in weatherData" :key="index" :style="getCardStyle(entry.main.temp)" class="pa-4">
       <div><strong>{{ entry.dt_txt }}</strong></div>
       <div>🌡️ {{ (entry.main.temp - 273.15).toFixed(1) }} °C</div>
       <div>☁️ {{ entry.clouds.all }}%</div>
@@ -29,7 +29,8 @@ function getCardStyle(tempK: number) {
   const redIntensity = Math.min(255, Math.max(0, Math.round((tempC / 40) * 255)))
   return {
     backgroundColor: `rgb(${redIntensity}, 50, 50)`,
-    color: '#fff'
+    color: '#fff',
+    minWidth: 'max-content',
   }
 }
 </script>

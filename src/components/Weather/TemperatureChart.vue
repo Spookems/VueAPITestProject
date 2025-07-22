@@ -1,8 +1,8 @@
 <template>
-  <v-card class="mt-5" elevation="4">
+  <v-card elevation="4" style="width: 300px;">
     <v-card-title>Temperatures</v-card-title>
     <v-card-text>
-      <v-responsive style="height: 300px;">
+      <v-responsive style="height: 310px;">
         <canvas ref="chartCanvas"></canvas>
       </v-responsive>
     </v-card-text>
