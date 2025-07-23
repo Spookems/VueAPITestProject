@@ -54,7 +54,6 @@ async function submit() {
     setTimeout(() => (validationMessage.value = ''), 5000)
     return
   }
-  alert(userId);
   try {
     const response = await fetch('https://localhost:7010/api/Users/UpsertPermission', {
       method: 'POST',

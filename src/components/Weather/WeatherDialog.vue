@@ -69,9 +69,7 @@ const props = defineProps<{
   gridColumns: (ColDef | ColGroupDef)[]
 }>()
 
-
 const emit = defineEmits(['update:dialog', 'update:tab'])
-
 
 function close() {
   emit('update:dialog', false)

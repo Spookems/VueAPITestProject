@@ -25,7 +25,6 @@ const columnDefs = ref([
 const rowData = ref([
   { time: '14:00', temperature: '14°C', chanceOfRain: '0%', windSpeed: '18 km/h' },
   { time: '15:00', temperature: '14°C', chanceOfRain: '0%', windSpeed: '17 km/h' },
-  // Add more rows here
 ])
 
 const defaultColDef = {
