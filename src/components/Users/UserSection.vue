@@ -3,7 +3,10 @@
     <div class="button-group" style="place-content: center; transition: transform 0.5s ease;">
       <button @click="startPolling" class="btn btn-primary">🔄 Start Polling Users</button>
       <button @click="showAddUserModal = true" class="btn btn-success">➕ Add New User</button>
-      <button @click="isEditMode = !isEditMode" class="btn btn-success">✏️ Edit Users and Connected Data</button>
+      <button @click="isEditMode = !isEditMode" class="btn btn-success">✏️ Toggle Edit button</button>
+      <button @click="showEditUserPermissionsModal = true" class="btn btn-success">➕ Add User Permission</button>
+      <button class="btn btn-success">➕ Add User Site</button>
+
     </div>
 
     <div class="row">
@@ -104,8 +107,8 @@ const permissionColumnDefs = computed(() => {
         cellRenderer: () => `<button class='btn btn-success' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>Edit</button>`,
         flex: 1,
         onCellClicked: (params) => {
-          //params.data.userId
           selectedPermission.value = params.data;
+          selectedPermission.value.userId = params.data.userId;
           showEditUserPermissionsModal.value = true;
         }
       }

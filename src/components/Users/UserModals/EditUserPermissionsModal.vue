@@ -4,6 +4,7 @@
       <h2>Edit User Permissions</h2>
       <p v-if="validationMessage" class="text-error">{{ validationMessage }}</p>
       <p v-if="saveResultMessage" class="text-success">{{ saveResultMessage }}</p>
+      <input v-model="form.userId" class="input" hidden="true" />
 
       <label>Permission Id</label>
       <input v-model="form.userPermissionId" class="input" disabled="true" />
@@ -36,6 +37,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 const form = ref({
+  userId: props.permission.userId,
   userPermissionId: props.permission.userPermissionId,
   permissionName: props.permission.permissionName,
   permissionType: props.permission.permissionType,
@@ -45,21 +47,21 @@ const validationMessage = ref('')
 const saveResultMessage = ref('')
 
 async function submit() {
-  const { userPermissionId, permissionName, permissionType } = form.value
+  const { userId, userPermissionId, permissionName, permissionType } = form.value
 
   if (!permissionName && !permissionType && !email) {
     validationMessage.value = 'Please enter at least one field.'
     setTimeout(() => (validationMessage.value = ''), 5000)
     return
   }
-
+  alert(userId);
   try {
     const response = await fetch('https://localhost:7010/api/Users/UpsertPermission', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        userId,
         userPermissionId,
-        userId: crypto.randomUUID(),
         permissionName,
         permissionType
       })
