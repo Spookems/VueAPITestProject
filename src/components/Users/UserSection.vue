@@ -122,7 +122,7 @@ const permissionCols = [
   { headerName: 'User ID', field: 'userId', hide: true, flex: 1 },
   { headerName: 'Permission Id', field: 'userPermissionId', hide: true, flex: 1 },
   { headerName: 'Permission Name', field: 'permissionName', flex: 1 },
-  { headerName: 'Permission Type', field: 'permissionType', flex: 1 },
+  { headerName: 'Permission Type', field: 'permissionTypeName', flex: 1 },
   { headerName: 'Created At', field: 'createdAt', flex: 1 }
 ]
 

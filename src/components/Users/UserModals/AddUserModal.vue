@@ -24,8 +24,7 @@
             <div v-for="(permission, index) in form.permissions" :key="index" class="d-flex align-center mb-2"
               style="gap: 1rem;">
               <v-text-field v-model="permission.permissionName" label="Permission Name" hide-details />
-              <v-select v-model="permission.permissionType" :items="['Read', 'Write', 'Admin']" label="Type"
-                hide-details />
+              <v-select v-model="permission.permissionType" :items="permissionTypes" label="Type" hide-details />
               <v-btn icon @click="removePermission(index)">
                 ❌
               </v-btn>
@@ -68,6 +67,11 @@ const emit = defineEmits(['close', 'saved'])
 const isOpen = ref(props.modelValue)
 const tab = ref(0)
 
+const permissionTypes = [ // temp
+  { text: 'Read', value: 1 },
+  { text: 'Write', value: 2 },
+  { text: 'Admin', value: 3 }
+]
 watch(() => props.modelValue, (val) => isOpen.value = val)
 
 const form = ref({
