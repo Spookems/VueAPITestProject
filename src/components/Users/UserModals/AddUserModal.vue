@@ -9,7 +9,7 @@
       </v-tabs>
 
       <v-window v-model="tab">
-        <!-- Details Tab -->
+
         <v-window-item :value="0">
           <v-card-text>
             <v-text-field label="First Name" v-model="form.firstName" />
@@ -18,7 +18,6 @@
           </v-card-text>
         </v-window-item>
 
-        <!-- Permissions Tab -->
         <v-window-item :value="1">
           <v-card-text>
             <div v-for="(permission, index) in form.permissions" :key="index" class="d-flex align-center mb-2"
@@ -29,12 +28,10 @@
                 ❌
               </v-btn>
             </div>
-
             <v-btn @click="addPermission" class="mt-2" color="secondary" variant="outlined">➕ Add Permission</v-btn>
           </v-card-text>
         </v-window-item>
 
-        <!-- Sites Tab -->
         <v-window-item :value="2">
           <v-card-text>
             <div v-for="(sites, index) in form.sites" :key="index" class="d-flex align-center mb-2" style="gap: 1rem;">
@@ -97,7 +94,6 @@ function addSite() {
 function removeSite(index) {
   form.value.sites.splice(index, 1)
 }
-
 
 async function submit() {
   const { firstName, lastName, email, permissions, sites } = form.value
