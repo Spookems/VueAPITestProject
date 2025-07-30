@@ -23,7 +23,7 @@
         <div v-if="showDetailGrid" class="detail-grid ag-theme-quartz styled-grid mb-3">
           <h3 class="pl-4">User Permissions</h3>
           <AgGridVue :rowData="detailGridData" :columnDefs="permissionColumnDefs" domLayout="autoHeight"
-            :pagination="true" :paginationPageSize="3" />
+            :pagination="true" :paginationPageSize="3" @rowClicked="onPermissionsClicked" />
         </div>
       </transition>
 
@@ -31,12 +31,12 @@
         <div v-if="showDetailGrid" class="detail-grid ag-theme-quartz styled-grid">
           <h3 class="pl-4">User Sites</h3>
           <AgGridVue :rowData="siteDetailGridData" :columnDefs="siteColumnDefs" domLayout="autoHeight"
-            :pagination="true" :paginationPageSize="3" />
+            :pagination="true" :paginationPageSize="3" @rowClicked="onSiteClicked" />
         </div>
       </transition>
     </div>
     <transition name="slide-fade">
-      <AddUserModal v-if="showAddUserModal" @close="showAddUserModal = false" @saved="fetchUsers" />
+      <AddUserModal :model-value="showAddUserModal" @close="showAddUserModal = false" @saved="fetchUsers" />
     </transition>
     <transition name="slide-fade">
       <UserPermissionsModal v-if="showEditUserPermissionsModal" :permission="selectedPermission"
@@ -62,6 +62,14 @@ import '@/assets/users.css'
 import AddUserModal from '@/components/Users/UserModals/AddUserModal.vue'
 import UserPermissionsModal from './UserModals/UserPermissionsModal.vue'
 import UserSiteModal from './UserModals/UserSitesModal.vue'
+import {
+  fetchAllUsers,
+  fetchUserPermissions,
+  fetchUserSites,
+  deleteUser as apiDeleteUser,
+  deletePermission as apiDeletePermission,
+  deleteSite as apiDeleteSite
+} from '@/Repository/UserRepository';
 
 provideGlobalGridOptions({ theme: "legacy" })
 ModuleRegistry.registerModules([ClientSideRowModelModule, ValidationModule, PaginationModule])
@@ -77,6 +85,9 @@ const isEditMode = ref(false)
 const selectedPermission = ref(null)
 const selectedSite = ref(null)
 const selectedUserId = ref(null)
+const isSiteDelete = ref(null)
+const isPermissionDelete = ref(null)
+
 const baseUserCols = [
   { headerName: 'User ID', field: 'userId', flex: 1 },
   { headerName: 'First Name', field: 'firstName', flex: 1 },
@@ -90,15 +101,22 @@ const userColumnDefs = computed(() => {
       ...baseUserCols,
       {
         headerName: 'Edit',
-        cellRenderer: () => `<button class='btn btn-success' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>Edit</button>`,
+        cellRenderer: () => `<button class='btn btn-success' style='height: 35px; padding: 5px; width: 60px; margin: 0;'>Edit</button>`,
         flex: 1,
         onCellClicked: (params) => {
-          window.location.href = `/edit-user/${params.data.userId}`
+          window.location.href = `/edit-user/${params.data.userId}`;
         }
+      },
+      {
+        headerName: '',
+        cellRenderer: () => `<button class='btn btn-danger' style='height: 35px; padding: 5px; width: 60px; margin: 0;'>❌</button>`,
+        flex: 1,
+        onCellClicked: (params) => deleteUser(params.data.userId, true)
       }
     ]
-    : baseUserCols
-})
+    : baseUserCols;
+});
+
 
 const permissionCols = [
   { headerName: 'User ID', field: 'userId', hide: true, flex: 1 },
@@ -107,6 +125,20 @@ const permissionCols = [
   { headerName: 'Permission Type', field: 'permissionType', flex: 1 },
   { headerName: 'Created At', field: 'createdAt', flex: 1 }
 ]
+
+function onPermissionsClicked(event) {
+  if (isPermissionDelete.value) {
+    OpenUpsertUserPermission(event.data);
+  }
+  isPermissionDelete.value = false;
+}
+
+function onSiteClicked(event) {
+  if (isSiteDelete.value) {
+    OpenUpsertUserSite(event.data);
+  }
+  isSiteDelete.value = false;
+}
 
 function OpenUpsertUserPermission(data = null) {
   if (data != null) {
@@ -121,7 +153,6 @@ function OpenUpsertUserPermission(data = null) {
 }
 
 function OpenUpsertUserSite(data = null) {
-
   if (data != null) {
     selectedSite.value = data;
   }
@@ -139,12 +170,20 @@ const permissionColumnDefs = computed(() => {
       ...permissionCols,
       {
         headerName: 'Edit',
-        cellRenderer: () => `<button class='btn btn-success' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>Edit</button>`,
+        cellRenderer: () => `<button class='btn btn-success' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>➕</button>
+                             <button class='btn btn-info' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>X</button>`,
         flex: 1,
         onCellClicked: (params) => {
           OpenUpsertUserPermission(params.data);
         }
+      },
+      {
+        headerName: 'Delete',
+        cellRenderer: () => `<button class='btn btn-danger' style='height: 35px; padding: 5px; width: 60px; margin: 0;'>❌</button>`,
+        flex: 1,
+        onCellClicked: (params) => deletePermission(params.data.userPermissionId)
       }
+
     ]
     : permissionCols
 })
@@ -167,6 +206,12 @@ const siteColumnDefs = computed(() => {
         onCellClicked: (params) => {
           OpenUpsertUserSite(params.data);
         }
+      },
+      {
+        headerName: 'Delete',
+        cellRenderer: () => `<button class='btn btn-danger' style='height: 35px; padding: 5px; width: 60px; margin: 0;'>❌</button>`,
+        flex: 1,
+        onCellClicked: (params) => deleteSite(params.data.userSiteId)
       }
     ]
     : siteCols
@@ -186,33 +231,6 @@ function handleSiteSaved() {
   showEditUserSiteModal.value = false;
   PollUserSites();
 }
-
-async function PollUsers() {
-  try {
-    const response = await fetch('https://localhost:7010/api/Users/GetAllUsers')
-    const data = await response.json()
-    users.value = Array.isArray(data) ? data : [data]
-  } catch (error) {
-    console.error('API fetch failed:', error)
-  }
-}
-
-async function PollUserPermissions() {
-  if (selectedUserId.value != null) {
-    const response = await fetch(`https://localhost:7010/api/Users/GetUserPermissions/${selectedUserId.value}`)
-    const data = await response.json()
-    detailGridData.value = Array.isArray(data) ? data : [data]
-  }
-}
-
-async function PollUserSites() {
-  if (selectedUserId.value != null) {
-    const siteResponse = await fetch(`https://localhost:7010/api/Users/GetUserSites/${selectedUserId.value}`)
-    const siteData = await siteResponse.json()
-    siteDetailGridData.value = Array.isArray(siteData) ? siteData : [siteData]
-  }
-}
-
 async function onRowClicked(event) {
   selectedUserId.value = event.data.userId
   try {
@@ -223,4 +241,68 @@ async function onRowClicked(event) {
     console.error('Failed to fetch user information:', err)
   }
 }
+
+async function PollUsers() {
+  try {
+    const data = await fetchAllUsers();
+    users.value = Array.isArray(data) ? data : [data];
+  } catch (error) {
+    console.error('API fetch failed:', error);
+  }
+}
+
+async function PollUserPermissions() {
+  if (selectedUserId.value != null) {
+    try {
+      const data = await fetchUserPermissions(selectedUserId.value);
+      detailGridData.value = Array.isArray(data) ? data : [data];
+    } catch (error) {
+      console.error('Permission fetch failed:', error);
+    }
+  }
+}
+
+async function PollUserSites() {
+  if (selectedUserId.value != null) {
+    try {
+      const data = await fetchUserSites(selectedUserId.value);
+      siteDetailGridData.value = Array.isArray(data) ? data : [data];
+    } catch (error) {
+      console.error('Site fetch failed:', error);
+    }
+  }
+}
+
+async function deleteUser(userId) {
+  if (!confirm('Are you sure you want to delete this user?')) return;
+  try {
+    await apiDeleteUser(userId);
+    await PollUsers();
+  } catch (err) {
+    console.error('Failed to delete user:', err);
+  }
+}
+
+async function deletePermission(userPermissionId) {
+  isPermissionDelete.value = true;
+  if (!confirm('Are you sure you want to delete this permission?')) return;
+  try {
+    await apiDeletePermission(userPermissionId);
+    await PollUserPermissions();
+  } catch (err) {
+    console.error('Failed to delete permission:', err);
+  }
+}
+
+async function deleteSite(siteId) {
+  isSiteDelete.value = true;
+  if (!confirm('Are you sure you want to delete this site?')) return;
+  try {
+    await apiDeleteSite(siteId);
+    await PollUserSites();
+  } catch (err) {
+    console.error('Failed to delete site:', err);
+  }
+}
+
 </script>

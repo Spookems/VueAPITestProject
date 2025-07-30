@@ -1,66 +1,146 @@
 <template>
-  <div class="modal-overlay">
-    <div class="modal">
-      <h2>Add New User</h2>
-      <p v-if="validationMessage" class="text-error">{{ validationMessage }}</p>
-      <p v-if="saveResultMessage" class="text-success">{{ saveResultMessage }}</p>
+  <v-dialog v-model="isOpen" max-width="600px" persistent>
+    <v-card>
+      <v-card-title>User Management</v-card-title>
+      <v-tabs v-model="tab" background-color="primary" dark>
+        <v-tab>Details</v-tab>
+        <v-tab>Permissions</v-tab>
+        <v-tab>Sites</v-tab>
+      </v-tabs>
 
-      <label>First Name</label>
-      <input v-model="form.firstName" class="input" />
+      <v-window v-model="tab">
+        <!-- Details Tab -->
+        <v-window-item :value="0">
+          <v-card-text>
+            <v-text-field label="First Name" v-model="form.firstName" />
+            <v-text-field label="Last Name" v-model="form.lastName" />
+            <v-text-field label="Email" v-model="form.email" />
+          </v-card-text>
+        </v-window-item>
 
-      <label>Last Name</label>
-      <input v-model="form.lastName" class="input" />
+        <!-- Permissions Tab -->
+        <v-window-item :value="1">
+          <v-card-text>
+            <div v-for="(permission, index) in form.permissions" :key="index" class="d-flex align-center mb-2"
+              style="gap: 1rem;">
+              <v-text-field v-model="permission.permissionName" label="Permission Name" hide-details />
+              <v-select v-model="permission.permissionType" :items="['Read', 'Write', 'Admin']" label="Type"
+                hide-details />
+              <v-btn icon @click="removePermission(index)">
+                ❌
+              </v-btn>
+            </div>
 
-      <label>Email</label>
-      <input v-model="form.email" class="input" />
+            <v-btn @click="addPermission" class="mt-2" color="secondary" variant="outlined">➕ Add Permission</v-btn>
+          </v-card-text>
+        </v-window-item>
 
-      <div class="modal-buttons">
-        <button @click="submit" class="btn btn-primary">Submit</button>
-        <button @click="$emit('close')" class="btn btn-secondary">Cancel</button>
-      </div>
-    </div>
-  </div>
+        <!-- Sites Tab -->
+        <v-window-item :value="2">
+          <v-card-text>
+            <div v-for="(sites, index) in form.sites" :key="index" class="d-flex align-center mb-2" style="gap: 1rem;">
+              <v-text-field v-model="sites.siteName" label="Site Name" />
+              <v-select v-model="sites.siteType" :items="['HQ', 'Remote', 'Field']" label="Site Type" />
+              <v-btn icon @click="removeSite(index)">
+                ❌
+              </v-btn>
+            </div>
+
+            <v-btn @click="addSite" class="mt-2" color="secondary" variant="outlined">➕ Add Sites</v-btn>
+          </v-card-text>
+        </v-window-item>
+      </v-window>
+
+      <v-card-actions>
+        <v-btn color="primary" @click="submit">Submit</v-btn>
+        <v-btn @click="emit('close')">Cancel</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
+const props = defineProps({ modelValue: Boolean })
 const emit = defineEmits(['close', 'saved'])
 
-const form = ref({ firstName: '', lastName: '', email: '' })
-const validationMessage = ref('')
-const saveResultMessage = ref('')
+const isOpen = ref(props.modelValue)
+const tab = ref(0)
+
+watch(() => props.modelValue, (val) => isOpen.value = val)
+
+const form = ref({
+  firstName: '',
+  lastName: '',
+  email: '',
+  permissions: [{ permissionName: '', permissionType: '' }],
+  sites: [{ siteName: '', siteType: '' }]
+})
+
+function addPermission() {
+  form.value.permissions.push({ permissionName: '', permissionType: '' })
+}
+
+function removePermission(index) {
+  form.value.permissions.splice(index, 1)
+}
+
+function addSite() {
+  form.value.sites.push({ siteName: '', siteType: '' })
+}
+
+function removeSite(index) {
+  form.value.sites.splice(index, 1)
+}
+
 
 async function submit() {
-  const { firstName, lastName, email } = form.value
+  const { firstName, lastName, email, permissions, sites } = form.value
 
-  if (!firstName && !lastName && !email) {
-    validationMessage.value = 'Please enter at least one field.'
-    setTimeout(() => (validationMessage.value = ''), 5000)
-    return
+  if (!firstName && !lastName && !email) return
+
+  const userId = crypto.randomUUID()
+
+  const payload = {
+    user: {
+      userId,
+      firstName,
+      lastName,
+      email
+    },
+    userPermissions: permissions.map(p => ({
+      userPermissionId: crypto.randomUUID(),
+      userId,
+      PermissionName: p.permissionName,
+      PermissionTypeName: p.permissionType,
+      CreatedAt: new Date().toISOString()
+    })),
+    userSites: sites.map(s => ({
+      userSiteId: crypto.randomUUID(),
+      userId,
+      siteName: s.siteName,
+      siteType: s.siteType,
+      createdAt: new Date().toISOString()
+    }))
   }
 
   try {
     const response = await fetch('https://localhost:7010/api/Users/AddUser', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: crypto.randomUUID(),
-        firstName,
-        lastName,
-        email
-      })
+      body: JSON.stringify(payload)
     })
 
     const result = await response.json()
-    saveResultMessage.value = result === true ? '✅ User saved successfully.' : '❌ Error saving user.'
-    emit('saved')
-    emit('close')
+    if (result === true) {
+      emit('saved')
+      emit('close')
+    } else {
+      console.error('Failed to save user.')
+    }
   } catch (error) {
     console.error('API error:', error)
-    saveResultMessage.value = '❌ API error saving user.'
   }
-
-  setTimeout(() => (saveResultMessage.value = ''), 5000)
 }
 </script>
