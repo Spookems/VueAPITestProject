@@ -5,6 +5,7 @@ import WeatherIndex from '@/components/Weather/WeatherIndex.vue'
 const routes = [
   { path: '/', component: WeatherIndex },
   { path: '/users', component: UserSection },
+  { path: '/weather', component: WeatherIndex },
 ]
 
 const router = createRouter({

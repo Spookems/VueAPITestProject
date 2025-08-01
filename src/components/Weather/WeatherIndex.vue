@@ -1,5 +1,28 @@
 <template>
   <v-app class="full-width-wrapper pa-0 fill-width">
+
+    <v-navigation-drawer v-model="drawer" app temporary>
+      <v-list>
+        <v-list-item @click="goToUsersSection" link>
+          <v-list-item-title>Users Section</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item link>
+          <v-list-item-title><b>Weather Section</b></v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+    <v-app-bar color="gray-darken-4" elevate-on-scroll flat app height="64">
+      <v-btn icon @click.stop="drawer = !drawer" aria-label="Toggle navigation">
+        <span style="font-size: 24px;">☰</span>
+      </v-btn>
+
+      <v-toolbar-title class="text-black" style="max-width: 180px;">Weather Section</v-toolbar-title>
+
+      <div class="d-flex align-center gap-x-2 pr-2">
+      </div>
+    </v-app-bar>
+
     <v-main>
       <router-view />
       <WeatherDialog v-model:dialog="dialog" v-model:tab="tab" :selected-weather="selectedWeather"
@@ -92,10 +115,17 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'
 import { ClientSideRowModelModule } from 'ag-grid-community'
 import { ModuleRegistry } from 'ag-grid-community'
 import type { WeatherEntry } from '../../Interfaces/WeatherData'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+function goToUsersSection() {
+  router.push('/users')
+}
 
 ModuleRegistry.registerModules([ClientSideRowModelModule])
 
 
+const drawer = ref(false)
 interface WeatherAlert {
   event: string
   severity: string

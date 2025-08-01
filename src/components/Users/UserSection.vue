@@ -1,13 +1,34 @@
 <template>
   <div class="page-container" style="max-width: none;">
-    <div class="button-group" style="place-content: center; transition: transform 0.5s ease;">
-      <button @click="startPolling" class="btn btn-primary">🔄 Start Polling Users</button>
-      <button @click="showAddUserModal = true" class="btn btn-success">➕ Add New User</button>
-      <button @click="isEditMode = !isEditMode" class="btn btn-success">✏️ Toggle Edit button</button>
-      <button @click="OpenUpsertUserPermission()" class="btn btn-success">➕ Add User
-        Permission</button>
-      <button class="btn btn-success">➕ Add User Site</button>
-    </div>
+    <v-navigation-drawer v-model="drawer" app temporary>
+      <v-list>
+        <v-list-item @click="console.log('Users Section clicked')" link>
+          <v-list-item-title><b>Users Section</b></v-list-item-title>
+        </v-list-item>
+
+        <v-list-item @click="goToWeatherSection" link>
+          <v-list-item-title>Weather Section</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+    <v-app-bar color="gray-darken-4" elevate-on-scroll flat app height="64">
+      <v-btn icon @click.stop="drawer = !drawer" aria-label="Toggle navigation">
+        <span style="font-size: 24px;">☰</span>
+      </v-btn>
+
+      <v-toolbar-title class="text-black" style="max-width: 180px;">User Dashboard</v-toolbar-title>
+
+      <div class="d-flex align-center gap-x-2 pr-2">
+
+        <v-btn @click="startPolling">Poll Users</v-btn>
+        <v-btn @click="showAddUserModal = true">➕ Add New User</v-btn>
+        <v-btn @click="isEditMode = !isEditMode">✏️ Toggle Edit</v-btn>
+        <v-btn @click="OpenUpsertUserPermission()">➕ Add User Permission</v-btn>
+        <v-btn @click="OpenUpsertUserSite()">➕ Add User Site</v-btn>
+
+        <v-btn block color="secondary" @click="goToWeatherSection">Go to Users</v-btn>
+      </div>
+    </v-app-bar>
 
     <div class="row">
       <div class="ag-theme-quartz styled-grid" :class="{ 'shift-left': showDetailGrid }"
@@ -50,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { AgGridVue } from 'ag-grid-vue3'
 import { ModuleRegistry } from 'ag-grid-community'
 import { ClientSideRowModelModule, ValidationModule } from 'ag-grid-community'
@@ -62,6 +83,7 @@ import '@/assets/users.css'
 import AddUserModal from '@/components/Users/UserModals/AddUserModal.vue'
 import UserPermissionsModal from './UserModals/UserPermissionsModal.vue'
 import UserSiteModal from './UserModals/UserSitesModal.vue'
+import { useRouter } from 'vue-router'
 import {
   fetchAllUsers,
   fetchUserPermissions,
@@ -71,6 +93,18 @@ import {
   deleteSite as apiDeleteSite
 } from '@/Repository/UserRepository';
 
+const drawer = ref(false)
+const group = ref(null)
+
+
+const router = useRouter()
+function goToWeatherSection() {
+  router.push('/weather')
+}
+
+watch(group, () => {
+  drawer.value = false
+})
 provideGlobalGridOptions({ theme: "legacy" })
 ModuleRegistry.registerModules([ClientSideRowModelModule, ValidationModule, PaginationModule])
 
@@ -170,7 +204,7 @@ const permissionColumnDefs = computed(() => {
       ...permissionCols,
       {
         headerName: 'Edit',
-        cellRenderer: () => `<button class='btn btn-success' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>➕</button>
+        cellRenderer: () => `<button class='btn btn-success' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>Edit</button>
                              <button class='btn btn-info' style='height: 35px; padding: 5px; width: 60px; margin: 0;''>X</button>`,
         flex: 1,
         onCellClicked: (params) => {
@@ -306,3 +340,12 @@ async function deleteSite(siteId) {
 }
 
 </script>
+<style scoped>
+.v-app-bar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.gap-x-2>*+* {
+  margin-left: 8px;
+}
+</style>
