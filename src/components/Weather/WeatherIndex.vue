@@ -10,11 +10,15 @@
         <v-list-item link>
           <v-list-item-title><b>Weather Section</b></v-list-item-title>
         </v-list-item>
+
+        <v-list-item @click="goToPiniaStoreSection" link>
+          <v-list-item-title>Pinia Tests</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
     <v-app-bar color="gray-darken-4" elevate-on-scroll flat app height="64">
-      <v-btn icon @click.stop="drawer = !drawer" aria-label="Toggle navigation">
-        <span style="font-size: 24px;">☰</span>
+      <v-btn icon @click.stop="drawer = !drawer" aria-label="Toggle navigation" style="background-color: transparent;">
+        <span class="text-h5" style="line-height: 1; color: black;">☰</span>
       </v-btn>
 
       <v-toolbar-title class="text-black" style="max-width: 180px;">Weather Section</v-toolbar-title>
@@ -120,6 +124,10 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 function goToUsersSection() {
   router.push('/users')
+}
+
+function goToPiniaStoreSection() {
+  router.push('/piniaStore')
 }
 
 ModuleRegistry.registerModules([ClientSideRowModelModule])
@@ -370,5 +378,13 @@ button {
   .weather-card-container {
     display: none;
   }
+}
+
+.v-app-bar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.gap-x-2>*+* {
+  margin-left: 8px;
 }
 </style>

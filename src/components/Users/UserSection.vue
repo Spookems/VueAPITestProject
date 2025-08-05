@@ -9,6 +9,10 @@
         <v-list-item @click="goToWeatherSection" link>
           <v-list-item-title>Weather Section</v-list-item-title>
         </v-list-item>
+
+        <v-list-item @click="goToPiniaStoreSection" link>
+          <v-list-item-title>Pinia Tests</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
     <v-app-bar color="gray-darken-4" elevate-on-scroll flat app height="64">
@@ -25,8 +29,6 @@
         <v-btn @click="isEditMode = !isEditMode">✏️ Toggle Edit</v-btn>
         <v-btn @click="OpenUpsertUserPermission()">➕ Add User Permission</v-btn>
         <v-btn @click="OpenUpsertUserSite()">➕ Add User Site</v-btn>
-
-        <v-btn block color="secondary" @click="goToWeatherSection">Go to Users</v-btn>
       </div>
     </v-app-bar>
 
@@ -100,6 +102,9 @@ const group = ref(null)
 const router = useRouter()
 function goToWeatherSection() {
   router.push('/weather')
+}
+function goToPiniaStoreSection() {
+  router.push('/piniaStore')
 }
 
 watch(group, () => {
